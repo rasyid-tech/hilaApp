@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HilalApp · Hisab hilal dan kalender Hijriah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EBEFF7; --surface:#FFFFFF; --ink:#131936; --muted:#566086; --line:#D3D9EA;
+  --accent:#9A4F00; --accent-soft:#FBEBD6; --good:#0E7A6A; --warn:#9A6A00; --bad:#B03A57;
+  --field:#F5F7FC;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#090E22; --surface:#111835; --ink:#ECEFFB; --muted:#9AA3C8; --line:#242D58;
+    --accent:#FFB86B; --accent-soft:#2A2442; --good:#6FD6C2; --warn:#F2C14E; --bad:#FF8FA3;
+    --field:#0C1230;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#090E22; --surface:#111835; --ink:#ECEFFB; --muted:#9AA3C8; --line:#242D58;
+  --accent:#FFB86B; --accent-soft:#2A2442; --good:#6FD6C2; --warn:#F2C14E; --bad:#FF8FA3;
+  --field:#0C1230;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font:16px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{padding:26px 0 16px}
+header .wrap{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{display:flex;gap:14px;align-items:center}
+.brand h1{font-size:clamp(28px,5vw,40px);font-weight:700}
+.brand p{margin:2px 0 0;color:var(--muted);max-width:46ch}
+
+.bar{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.bar label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.bar input,.bar select{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--ink);min-width:0;width:100%}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
+button{cursor:pointer;background:transparent;border:1px solid var(--line);border-radius:8px;padding:8px 14px;color:var(--ink)}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+:root[data-theme="dark"] button.primary{color:#1a1226}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#1a1226}}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+.stage{position:relative;margin-top:18px;border-radius:18px;overflow:hidden;background:#0A1030;color:#F6EFD9}
+.stage svg{display:block;width:100%;height:auto}
+.readout{position:absolute;left:24px;top:18px;max-width:300px;z-index:2}
+.pct{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:clamp(52px,9vw,88px);line-height:1;letter-spacing:-.03em}
+.plabel{font-size:14px;opacity:.85;margin-top:2px}
+.verdict{display:inline-block;margin-top:10px;padding:5px 12px;border-radius:999px;font-weight:500;font-size:14px;background:rgba(246,239,217,.14);border:1px solid rgba(246,239,217,.35)}
+.verdict.v-hi{background:rgba(111,214,194,.2);border-color:#6FD6C2}
+.verdict.v-mid{background:rgba(242,193,78,.2);border-color:#F2C14E}
+.verdict.v-lo{background:rgba(255,143,163,.18);border-color:#FF8FA3}
+.note{margin:12px 2px 0;padding:10px 14px;border-radius:10px;background:var(--accent-soft);color:var(--ink);font-size:14.5px}
+.note:empty{display:none}
+@media (max-width:720px){
+  .readout{position:relative;left:auto;top:auto;padding:18px 20px 0;max-width:none}
+}
+.skyfoot{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+section.block{margin-top:44px}
+section.block>h2{font-size:clamp(22px,3.4vw,28px);font-weight:700}
+section.block>p.sub{margin:6px 0 18px;color:var(--muted);max-width:68ch}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0 22px}
+.fact{padding:14px 0 12px;border-top:1px solid var(--line)}
+.fact b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15}
+.fact span{font-size:13.5px;color:var(--muted)}
+.fact small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.group-title{font-size:15px;color:var(--muted);font-weight:600;margin:22px 0 0}
+
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:13.5px;background:transparent}
+.tablewrap{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tablewrap table th:first-child,.tablewrap table td:first-child{padding-left:16px}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:500;border:1px solid var(--line)}
+.tag.ok{color:var(--good);border-color:var(--good)}
+.tag.mid{color:var(--warn);border-color:var(--warn)}
+.tag.no{color:var(--bad);border-color:var(--bad)}
+td.num,th.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+tr.rowbtn td button{border:0;padding:0;background:none;text-align:left;color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+tr.rowbtn.active td{background:var(--accent-soft)}
+
+pre{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:8px 0 12px}
+.msg{font-size:14.5px;margin-top:10px;min-height:1.4em}
+.fileinput{display:none}
+footer{margin:56px 0 36px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:18px}
+footer p{max-width:78ch;margin:0 0 8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.hdr-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{border:0;border-radius:999px;padding:6px 14px;font-size:14px;color:var(--muted);background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:500}
+main.simple .x{display:none!important}
+main:not(.simple) .s{display:none!important}
+main.simple .bar:not(.custom) .coord{display:none}
+.clock{position:absolute;right:22px;top:18px;z-index:2;text-align:right;color:#F6EFD9}
+.clock b{display:block;font:600 clamp(26px,4vw,38px)/1.1 "Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.clock span{font-size:13px;opacity:.9}
+@media (max-width:720px){.clock{position:relative;right:auto;top:auto;padding:8px 20px 0;text-align:left}}
+.lbl{font-size:14px;fill:#F6EFD9}
+#ring{animation:rp 1.6s ease-in-out infinite}
+@keyframes rp{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#ring{animation:none}}
+.tl{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.tlgrid{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.tlgrid button.primary{min-width:76px}
+.tlgrid select{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.scrubwrap input[type=range]{width:100%;margin:8px 0 0;accent-color:var(--accent)}
+.ticks{position:relative;height:42px;margin-top:2px}
+.tick{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.tick i{display:block;width:2px;height:8px;background:var(--accent);border-radius:1px}
+.tlfoot{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.phase{font-size:15px;color:var(--ink)}
+ul.plain{margin:14px 0 0;padding-left:20px;font-size:17px;line-height:1.65;max-width:70ch}
+ul.plain li{margin-bottom:8px}
+details{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 16px}
+details summary{cursor:pointer;font-weight:600}
+details dl{margin:12px 0 0}
+details dt{font-weight:600;margin-top:10px}
+details dd{margin:2px 0 0;color:var(--muted)}
+.safety{margin-top:14px;padding:12px 16px;border-radius:12px;border:1px solid var(--bad);color:var(--ink);font-size:15.5px;max-width:70ch}
+/* ---- HilalApp v3: menu, tampilan baru ---- */
+header{padding:18px 0 10px}
+.toprow{align-items:center!important}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:60;background:var(--bg);border-bottom:1px solid var(--line)}
+.navin{display:flex;gap:6px;overflow-x:auto;padding:8px 20px;max-width:1080px;margin:0 auto;scrollbar-width:none}
+.navin::-webkit-scrollbar{display:none}
+.navin button{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid transparent;border-radius:999px;padding:8px 14px;color:var(--muted);font-weight:500;flex:0 0 auto}
+.navin button:hover{border-color:var(--line);color:var(--ink)}
+.navin button[aria-current="page"]{background:var(--accent-soft);color:var(--ink);border-color:var(--line)}
+.navin svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){.brand p{display:none}.brand svg{width:38px;height:38px}}
+.view[hidden]{display:none!important}
+.view>.block.first{margin-top:26px}
+.modebar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:14px 0 8px;color:var(--muted);font-size:14px}
+.kfacts .fact b{font-size:19px}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:600px}
+.mh{font-size:12.5px;color:var(--muted);text-align:center;padding:2px 0}
+.mc{border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--surface);display:flex;flex-direction:column;min-height:52px}
+.mc b{font-size:18px;line-height:1.2;font-variant-numeric:tabular-nums}
+.mc span{font-size:11.5px;color:var(--muted)}
+.mc.sp{border-color:var(--accent);background:var(--accent-soft)}
+.gt{font-size:18px;margin:0 0 12px}
+td small,.tablewrap small{display:block;color:var(--muted);font-size:12.5px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel h3{font-size:17px;margin:0 0 10px}
+.panel h3:not(:first-child){margin-top:20px}
+.form{display:flex;flex-direction:column;gap:12px}
+.form h3{margin:8px 0 0}
+.form h3:first-child{margin-top:0}
+.fld{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.form input[type=text],.form input[type=number],.form input[type=date],.form input[type=time],.form select,.form textarea,.gctl input[type=date],.panel textarea{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--ink);width:100%;min-width:0;font:inherit}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.radios{display:flex;gap:10px;flex-wrap:wrap}
+.radios label{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);padding:9px 14px;border-radius:10px;color:var(--ink);font-size:15px;cursor:pointer;background:var(--field)}
+.radios input{width:auto;accent-color:var(--accent)}
+.rgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.rgrid{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 18px;margin:0}
+.kv dt{color:var(--muted);font-size:14px}
+.kv dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.msg.good{color:var(--good)}
+.msg.bad{color:var(--bad)}
+.range{display:flex;align-items:center;gap:12px}
+.range input{flex:1;accent-color:var(--accent)}
+.range output{min-width:3.2em;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.globewrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.globewrap{grid-template-columns:1fr}}
+.gstage{position:relative;border-radius:18px;background:radial-gradient(ellipse at 50% 42%,#101B48 0%,#070B1F 72%);overflow:hidden;aspect-ratio:1/1;width:100%;max-width:640px;margin:0 auto}
+.gstage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.gprog{position:absolute;left:14px;top:12px;color:#F6EFD9;font-size:13px;pointer-events:none}
+.gctl{display:flex;flex-direction:column;gap:14px}
+.gctl .btnrow{grid-column:auto;margin-top:10px}
+.gctl .fld+.fld,.gctl .btnrow+.fld{margin-top:12px}
+.chk{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:12px;color:var(--ink)}
+.chk input{accent-color:var(--accent)}
+.lg{display:grid;gap:7px;font-size:14.5px}
+.lg span{display:flex;align-items:center;gap:10px}
+.lg i{width:12px;height:12px;border-radius:50%;display:inline-block;flex:0 0 auto}
+button[aria-pressed="true"].tog{background:var(--accent-soft);border-color:var(--accent)}
+/* ---- HilalApp v4: gerbang login, layar pembuka, kalender ramah ---- */
+body.locked{overflow:hidden}
+#app[hidden]{display:none}
+.hdr-r{align-items:center}
+.who{font-size:14px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.ghost{border-color:var(--line);color:var(--muted);padding:7px 14px;border-radius:999px;font-size:14px}
+.by-mini{display:block;margin-top:2px;font-size:12.5px;letter-spacing:.04em;color:var(--muted)}
+.by-mini b{color:var(--accent);font-weight:600}
+footer .credit{margin-top:14px;font-size:14px;color:var(--ink)}
+footer .credit b{color:var(--accent)}
+
+/* gerbang */
+.gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;overflow:auto;background:#070B1F;color:#F6EFD9}
+.gate[hidden],.splash[hidden]{display:none}
+.gate-sky{position:fixed;inset:0;pointer-events:none}
+.gate-sky svg,.splash .bg{position:absolute;inset:0;width:100%;height:100%}
+.st{fill:#FFF7E0;animation:tw 3.2s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
+.halo{animation:halo 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes halo{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+.gate-card{position:relative;width:min(440px,100%);padding:28px 26px 22px;border-radius:22px;background:rgba(12,18,48,.66);border:1px solid rgba(246,239,217,.2);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 24px 70px rgba(0,0,0,.5);animation:cardin .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cardin{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.g-brand{display:flex;gap:14px;align-items:center;margin-bottom:20px}
+.g-brand h1{font-size:34px;font-weight:700;color:#F6EFD9}
+.g-brand p{margin:2px 0 0;font-size:14px;color:#B9C0E0;line-height:1.45}
+.g-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.07);margin-bottom:16px}
+.g-tabs button{border:0;border-radius:9px;padding:9px;color:#B9C0E0;background:transparent;font-weight:500}
+.g-tabs button[aria-selected="true"]{background:#F6EFD9;color:#14183A}
+.g-fld{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#B9C0E0}
+.g-fld input{background:rgba(255,255,255,.08);border:1px solid rgba(246,239,217,.25);border-radius:10px;padding:12px;color:#F6EFD9;font:inherit;font-size:16px;width:100%}
+.g-fld input::placeholder{color:#8088B0}
+.g-pw{display:flex;gap:8px}
+.g-pw button{border-color:rgba(246,239,217,.25);color:#F6EFD9;border-radius:10px;padding:0 14px;flex:0 0 auto}
+.g-hint{font-size:13px;color:#9AA3C8;margin:10px 0 0;line-height:1.5}
+.g-msg{min-height:1.4em;margin:12px 0 0;font-size:14px;color:#B9C0E0}
+.g-msg.bad{color:#FF8FA3}
+.g-go{width:100%;margin-top:6px;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#F6EFD9,#FFB86B);color:#1A1226;font-weight:600;font-size:16px}
+.g-go:disabled{opacity:.6;cursor:wait}
+.g-by{margin:18px 0 0;text-align:center;font-size:13px;color:#9AA3C8;letter-spacing:.05em}
+.g-by b{color:#FFD9A0;font-weight:600}
+.gate :focus-visible,.splash :focus-visible{outline:2px solid #FFB86B}
+
+/* layar pembuka */
+.splash{position:fixed;inset:0;z-index:210;display:grid;place-items:center;background:#02040F;color:#F6EFD9;overflow:hidden;transition:opacity .55s}
+.splash.out{opacity:0}
+.sp-inner{position:relative;text-align:center;padding:24px;margin-top:6vh}
+.sp-hello,.sp-title,.sp-sub,.sp-by,.sp-bar,.sp-btn{opacity:0}
+.splash.run .sp-hello{animation:up .9s .2s both}
+.splash.run .sp-title{animation:titlein 1.3s .5s both}
+.splash.run .sp-sub{animation:up .9s 1.2s both}
+.splash.run .sp-by{animation:up 1s 1.7s both}
+.splash.run .sp-bar{animation:up .6s 2s both}
+.splash.run .sp-btn{animation:up .6s 2.4s both}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes titlein{from{opacity:0;letter-spacing:.35em;filter:blur(8px)}to{opacity:1;letter-spacing:-.01em;filter:none}}
+.sp-hello{font-size:17px;color:#B9C0E0;margin:0 0 6px;letter-spacing:.04em}
+.sp-title{font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;font-size:clamp(54px,13vw,112px);font-weight:700;margin:0;line-height:1;background:linear-gradient(180deg,#FFFFFF,#F6EFD9 55%,#FFB86B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sp-sub{margin:12px 0 0;color:#B9C0E0;font-size:16px}
+.sp-by{margin:34px auto 0;display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:12px 28px;border-radius:999px;border:1px solid rgba(255,217,160,.35);background:rgba(255,184,107,.08)}
+.sp-by span{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:#B9C0E0}
+.sp-by b{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:28px;letter-spacing:.04em;background:linear-gradient(90deg,#F6EFD9,#FFB86B,#F6EFD9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 3s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.sp-bar{width:min(260px,70vw);height:4px;border-radius:3px;background:rgba(246,239,217,.15);margin:26px auto 0;overflow:hidden}
+.sp-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#F6EFD9,#FFB86B);border-radius:3px}
+.splash.run .sp-bar i{animation:fill linear forwards}
+@keyframes fill{to{width:100%}}
+.sp-btn{width:auto;min-width:150px;margin-top:22px;padding:11px 28px}
+.moonrise{animation:rise 3.2s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{transform:translateY(170px);opacity:0}to{transform:none;opacity:1}}
+.orbit{animation:orb 40s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes orb{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .st,.halo,.orbit,.moonrise,.sp-by b,.gate-card{animation:none!important}
+  .splash .sp-hello,.splash .sp-title,.splash .sp-sub,.splash .sp-by,.splash .sp-bar,.splash .sp-btn{animation:none!important;opacity:1!important}
+}
+
+/* kalender ramah pengguna */
+.khero{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-top:6px}
+@media (max-width:760px){.khero{grid-template-columns:1fr}}
+.kh-now,.kh-next{border-radius:20px;padding:22px 24px;position:relative;overflow:hidden}
+.kh-now{background:linear-gradient(135deg,#171B4D 0%,#3A2F69 55%,#8A4F7A 100%);color:#F6EFD9}
+.kh-now::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,184,107,.45),rgba(255,184,107,0) 70%)}
+.kh-next{background:var(--surface);border:1px solid var(--line)}
+.kh-lab{display:block;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.8}
+.kh-h{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(28px,5.4vw,42px);line-height:1.1;margin:8px 0 6px;position:relative}
+.kh-g{display:block;font-size:16px;position:relative}
+.kh-now small{display:block;margin-top:8px;font-size:13.5px;opacity:.85;position:relative}
+.kh-n{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(22px,4vw,30px);line-height:1.15;margin:8px 0 4px}
+.kh-next span{display:block;color:var(--muted);font-size:15px}
+.kh-next em{display:inline-block;margin-top:10px;font-style:normal;font-weight:600;padding:5px 14px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.kset{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-top:16px}
+.kset .fld{min-width:160px}
+.kset select{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--ink);font:inherit;width:100%}
+.kmn{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.kmn button{width:46px;height:46px;border-radius:50%;font-size:26px;line-height:1;padding:0 0 3px;flex:0 0 auto}
+.kmt{text-align:center;flex:1}
+.kmt h2{font-size:clamp(24px,4.4vw,32px)}
+.kmt p{margin:2px 0 0;color:var(--muted)}
+.mgrid{max-width:680px;margin:0 auto;gap:8px}
+.mc{min-height:68px;border-radius:12px;position:relative}
+.mc b{font-size:20px}
+.mc.fri b{color:var(--good)}
+.mc em{font-style:normal;font-size:10.5px;line-height:1.15;color:var(--accent);font-weight:600;margin-top:auto}
+.mc.today{outline:2.5px solid var(--accent);outline-offset:1px}
+.mc.today::after{content:"Hari ini";position:absolute;top:-9px;right:6px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--accent);color:#fff}
+:root[data-theme="dark"] .mc.today::after{color:#1a1226}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mc.today::after{color:#1a1226}}
+@media (max-width:520px){.mc{min-height:58px;padding:5px 6px}.mc b{font-size:17px}.mc span{font-size:10.5px}.mc em{font-size:9px}.mgrid{gap:5px}}
+.kmnote{max-width:680px;margin:6px auto 0;color:var(--muted);font-size:14.5px}
+ul.kmev{max-width:680px;margin:12px auto 0;font-size:16px}
+.evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.evc{display:flex;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.evc.up{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.evc.past{opacity:.6}
+.evd{min-width:58px;text-align:center;border-radius:12px;padding:8px 6px;background:var(--accent-soft)}
+.evd b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:24px;line-height:1.1}
+.evd span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.evt b{display:block;font-size:16px;line-height:1.25}
+.evt span{display:block;font-size:13.5px;color:var(--muted)}
+.evt em{display:inline-block;margin-top:5px;font-style:normal;font-size:12.5px;font-weight:600;color:var(--accent)}
+/* ---- HilalApp v5: latar seluruh aplikasi, pemilih standar, globe jelas ---- */
+:root[data-theme="dark"]{--bg:#050818;--surface:rgba(13,20,50,.88);--ink:#EEF1FC;--muted:#A9B2D8;--line:#2A3566;--accent:#FFB86B;--accent-soft:rgba(255,184,107,.14);--good:#6FD6C2;--warn:#F2C14E;--bad:#FF8FA3;--field:rgba(5,9,28,.72)}
+body{background:#050818}
+.appbg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#050818}
+.appbg svg{position:absolute;inset:0;width:100%;height:100%}
+#app>header,#app>main{position:relative;z-index:1}
+.nav{background:rgba(5,8,24,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.panel,.tablewrap,.tl,.evc,details,.bar,.rg,.who,.kh-next,.mc,.seg{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.tablewrap tr.active td{background:var(--accent-soft)}
+.ghost{background:transparent}
+.g-fld input,.g-fld select{background:rgba(255,255,255,.08);border:1px solid rgba(246,239,217,.25);border-radius:10px;padding:12px;color:#F6EFD9;font:inherit;font-size:16px;width:100%}
+.g-fld select option{color:#14183A}
+
+/* pemilih standar */
+.orgpick{position:fixed;inset:0;z-index:205;display:grid;place-items:center;padding:16px;overflow:auto;background:rgba(3,5,18,.74);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#F6EFD9}
+.orgpick[hidden]{display:none}
+.op-card2{width:min(880px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:26px;border-radius:22px;background:rgba(11,17,46,.94);border:1px solid rgba(246,239,217,.2);box-shadow:0 24px 70px rgba(0,0,0,.55);animation:cardin .6s cubic-bezier(.2,.8,.2,1) both}
+.op-card2 h2{font-size:clamp(24px,4vw,32px);color:#F6EFD9}
+.op-sub{color:#B9C0E0;margin:8px 0 6px;line-height:1.5}
+.op-gt{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:#9AA3C8;margin:18px 0 10px;font-family:"IBM Plex Sans",system-ui,sans-serif}
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.op-card{display:flex;flex-direction:column;gap:5px;text-align:left;padding:14px;border-radius:14px;border:1.5px solid rgba(246,239,217,.18);background:rgba(255,255,255,.05);color:#F6EFD9;cursor:pointer}
+.op-card:hover{border-color:rgba(255,184,107,.6)}
+.op-card b{font-size:16px;line-height:1.25}
+.op-card span{font-size:13.5px;color:#B9C0E0;line-height:1.4}
+.op-card em{font-style:normal;font-size:12px;color:#FFD9A0;margin-top:2px}
+.op-card.on{border-color:#FFB86B;background:rgba(255,184,107,.14);box-shadow:0 0 0 3px rgba(255,184,107,.2)}
+.op-custom{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px}
+.op-custom[hidden]{display:none}
+.op-desc{margin:16px 0 0;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06);color:#DCE1F5;font-size:14.5px;line-height:1.55}
+.op-actions{display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:16px}
+.op-actions .g-go{width:auto;padding:12px 26px;margin:0}
+.op-actions .ghost{color:#B9C0E0;border-color:rgba(246,239,217,.25)}
+.op-foot{font-size:12.5px;color:#8E97BE;margin:12px 0 0}
+
+/* globe */
+.gtop{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin:6px 0 16px}
+.gtop .fld{min-width:200px}
+.gtop select{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--ink);font:inherit;width:100%}
+.gstage{max-width:720px}
+.gbadge{position:absolute;left:14px;top:12px;z-index:2;max-width:70%;color:#F6EFD9;background:rgba(5,8,24,.6);border:1px solid rgba(246,239,217,.22);border-radius:12px;padding:8px 12px;pointer-events:none}
+.gbadge b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:18px}
+.gbadge span{display:block;font-size:12.5px;color:#C7CEEA;line-height:1.35}
+.gprog{left:auto;right:14px;top:auto;bottom:12px;text-shadow:0 1px 4px #000}
+.gsum{margin:18px 0 0;font-size:17px;line-height:1.65;max-width:78ch}
+.reggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.rg{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--surface)}
+.rgh{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.rgb{height:6px;background:var(--line);border-radius:3px;margin:10px 0 6px;overflow:hidden}
+.rgb i{display:block;height:100%;background:var(--good);border-radius:3px}
+.rg small{color:var(--muted);font-size:13px}
+
+/* Peningkatan kontras teks tanpa mengubah fungsi tampilan Sederhana/Lengkap */
+:root[data-theme="dark"] { --muted: #FFFFFF; }
+:root[data-theme="dark"] .g-hint,
+:root[data-theme="dark"] .g-msg,
+:root[data-theme="dark"] .op-sub,
+:root[data-theme="dark"] .op-gt,
+:root[data-theme="dark"] .op-foot,
+:root[data-theme="dark"] .op-card span,
+:root[data-theme="dark"] .gbadge span { color: #FFFFFF; }
+
+
+
+/* ---- v2.5: Tanya HilalApp ---- */
+.askwrap{display:grid;gap:12px;max-width:820px}
+.askctx{margin:0;font-size:13.5px;color:var(--muted)}
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:240px;max-height:58vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.cb{max-width:88%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.5;color:var(--ink);word-wrap:break-word}
+.cb.b{align-self:flex-start;background:var(--accent-soft);border:1px solid var(--line);border-top-left-radius:4px}
+.cb.u{align-self:flex-end;background:var(--field);border:1px solid var(--line);border-top-right-radius:4px}
+.cb p{margin:0 0 8px}.cb p:last-child{margin:0}
+.cb ul{margin:4px 0 8px;padding-left:18px}.cb li{margin-bottom:3px}
+.cb.typing{color:var(--muted)}
+.askchips{display:flex;flex-wrap:wrap;gap:8px}
+.askchips button{font-size:13.5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.askchips button:hover{background:var(--accent-soft)}
+.askform{display:flex;gap:8px}
+.askform .mic{width:46px;flex:0 0 auto;padding:0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center}
+.askform .mic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.askform .mic.rec{background:var(--bad);border-color:var(--bad);color:#fff;animation:micp 1.1s ease-in-out infinite}
+@keyframes micp{0%,100%{box-shadow:0 0 0 0 rgba(255,143,163,.55)}50%{box-shadow:0 0 0 9px rgba(255,143,163,0)}}
+@media (prefers-reduced-motion:reduce){.askform .mic.rec{animation:none}}
+.voicebar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--muted)}
+.voicebar label{display:inline-flex;gap:8px;align-items:center;color:var(--ink);cursor:pointer}
+.voicebar input{accent-color:var(--accent)}
+.voicebar button{padding:5px 12px;font-size:13.5px;border-radius:999px}
+.vstat{min-height:1.3em;font-size:13.5px;color:var(--muted)}
+.cb .spk{margin-top:6px;font-size:12.5px;padding:3px 10px;border-radius:999px;color:var(--muted)}
+.askform input{flex:1;min-width:0;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);font:inherit}
+</style>
+</head>
+<body class="locked" data-role="">
+<div class="appbg" aria-hidden="true">
+  <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="abgsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#03051A"/><stop offset=".55" stop-color="#0A1030"/><stop offset="1" stop-color="#171C52"/></linearGradient>
+      <radialGradient id="abghalo"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".22"/><stop offset=".6" stop-color="#FFB86B" stop-opacity=".06"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+      <linearGradient id="abgcres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      <linearGradient id="abgrim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2A35E" stop-opacity="0"/><stop offset=".5" stop-color="#FFD9A0" stop-opacity=".55"/><stop offset="1" stop-color="#F2A35E" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="1000" height="700" fill="url(#abgsky)"/>
+    <g id="app-stars"></g>
+    <circle class="halo" cx="835" cy="95" r="190" fill="url(#abghalo)"/>
+    <g transform="translate(790,52) scale(3.2)" opacity=".55"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#abgcres)"/></g>
+    <circle cx="500" cy="1260" r="700" fill="#040821"/>
+    <circle cx="500" cy="1260" r="700" fill="none" stroke="url(#abgrim)" stroke-width="2.5"/>
+  </svg>
+</div>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate-sky" aria-hidden="true">
+    <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="gsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050818"/><stop offset=".45" stop-color="#171B4D"/><stop offset=".72" stop-color="#4A2F70"/><stop offset=".9" stop-color="#C9645E"/><stop offset="1" stop-color="#F2A35E"/></linearGradient>
+        <radialGradient id="gglow"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".9"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+        <radialGradient id="ghalo"><stop offset="0" stop-color="#F6EFD9" stop-opacity=".38"/><stop offset="1" stop-color="#F6EFD9" stop-opacity="0"/></radialGradient>
+        <linearGradient id="gcres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      </defs>
+      <rect width="1000" height="700" fill="url(#gsky)"/>
+      <g id="gate-stars"></g>
+      <circle class="halo" cx="770" cy="200" r="190" fill="url(#ghalo)"/>
+      <g transform="translate(690,100) scale(4.6)"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#gcres)"/></g>
+      <ellipse cx="500" cy="610" rx="560" ry="120" fill="url(#gglow)" opacity=".6"/>
+      <rect y="610" width="1000" height="90" fill="#070B1C"/>
+      <line x1="0" y1="610" x2="1000" y2="610" stroke="#F2A35E" stroke-opacity=".6"/>
+    </svg>
+  </div>
+  <div class="gate-card">
+    <div class="g-brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="22" fill="#0E1535"/><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#gcres)"/></svg>
+      <div><h1 id="gate-title">HilalApp</h1><p>Hisab hilal, kalender Hijriah, dan laporan rukyat.</p></div>
+    </div>
+    <form id="gate-form" autocomplete="off" novalidate>
+      <div id="gp-user">
+        <label class="g-fld">Nama Anda (opsional)<input id="g-name" type="text" maxlength="40" autocomplete="name" placeholder="Contoh: Ahmad"></label>
+        <p class="g-hint">Anda dapat melihat pengamatan hilal, kalender Hijriah, globe dunia, dan mengisi laporan rukyat, serta bertanya seputar hilal.</p>
+      </div>
+      <div class="g-msg" id="g-msg" role="alert"></div>
+      <button type="submit" id="g-go" class="g-go">Masuk</button>
+    </form>
+    <p class="g-by">Dipersembahkan oleh <b>Hilaltech</b></p>
+  </div>
+</div>
+
+<div class="splash" id="splash" hidden aria-live="polite">
+  <svg class="bg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="ssky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02040F"/><stop offset=".6" stop-color="#0B1236"/><stop offset="1" stop-color="#26285C"/></linearGradient>
+      <radialGradient id="satm"><stop offset=".72" stop-color="#6EA0FF" stop-opacity="0"/><stop offset=".78" stop-color="#8FB4FF" stop-opacity=".5"/><stop offset="1" stop-color="#6EA0FF" stop-opacity="0"/></radialGradient>
+      <radialGradient id="shalo"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".34"/><stop offset=".5" stop-color="#FFB86B" stop-opacity=".1"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+      <linearGradient id="scres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      <linearGradient id="srim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2A35E" stop-opacity="0"/><stop offset=".5" stop-color="#FFD9A0"/><stop offset="1" stop-color="#F2A35E" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="1000" height="700" fill="url(#ssky)"/>
+    <g id="sp-stars"></g>
+    <ellipse class="orbit" cx="500" cy="300" rx="330" ry="86" fill="none" stroke="#F6EFD9" stroke-opacity=".16" stroke-dasharray="3 9"/>
+    <g class="moonrise">
+      <circle class="halo" cx="500" cy="270" r="190" fill="url(#shalo)"/>
+      <g transform="translate(430,200) scale(3.2)"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" transform="translate(-6,0)" fill="url(#scres)"/></g>
+    </g>
+    <circle cx="500" cy="1210" r="700" fill="#040821"/>
+    <circle cx="500" cy="1210" r="700" fill="url(#satm)"/>
+    <circle cx="500" cy="1210" r="700" fill="none" stroke="url(#srim)" stroke-width="3" opacity=".95"/>
+  </svg>
+  <div class="sp-inner">
+    <p class="sp-hello" id="sp-hello">Selamat datang</p>
+    <h2 class="sp-title">HilalApp</h2>
+    <p class="sp-sub">Hisab hilal, kalender Hijriah, dan laporan rukyat</p>
+    <div class="sp-by"><span>Dipersembahkan oleh</span><b>Hilaltech</b></div>
+    <div class="sp-bar" aria-hidden="true"><i id="sp-bar"></i></div>
+    <button id="sp-go" type="button" class="g-go sp-btn">Mulai</button>
+  </div>
+</div>
+
+<div class="orgpick" id="orgpick" role="dialog" aria-modal="true" aria-labelledby="op-title" hidden>
+  <div class="op-card2">
+    <h2 id="op-title">Pilih standar falakiyah Anda</h2>
+    <p class="op-sub">Standar ini dipakai untuk menilai hilal, menyusun kalender Hijriah, dan menandai wilayah pada globe. Anda dapat menggantinya kapan saja lewat tombol "Standar" di bagian atas.</p>
+    <div id="op-list"></div>
+    <div class="op-custom" id="op-custom" hidden>
+      <label class="g-fld">Tinggi hilal minimal (°)<input id="op-alt" type="number" step="0.1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Elongasi minimal (°)<input id="op-elong" type="number" step="0.1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Umur bulan minimal (jam)<input id="op-age" type="number" step="1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Wilayah penilaian<select id="op-scope"><option value="indo">Indonesia</option><option value="global">Seluruh dunia</option></select></label>
+    </div>
+    <p class="op-desc" id="op-desc"></p>
+    <div class="op-actions"><button id="op-cancel" type="button" class="ghost" hidden>Batal</button><button id="op-ok" type="button" class="g-go">Gunakan standar ini</button></div>
+    <p class="op-foot">Rumusan mengacu pada informasi publik terbaru. Keputusan resmi organisasi dan Pemerintah tetap yang berlaku.</p>
+  </div>
+</div>
+
+<div id="app" hidden>
+<header>
+  <div class="wrap toprow">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient></defs>
+        <circle cx="23" cy="23" r="22" fill="#0E1535"/>
+        <path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#lg)"/>
+      </svg>
+      <div>
+        <h1>HilalApp</h1>
+        <p>Hisab hilal, kalender Hijriah, dan laporan rukyat.<span class="by-mini">Dipersembahkan oleh <b>Hilaltech</b></span></p>
+      </div>
+    </div>
+    <div class="hdr-r"><button id="orgbtn" type="button" class="ghost">Standar: MABIMS</button><div class="who" id="who"></div><button id="logout" type="button" class="ghost">Keluar</button></div>
+  </div>
+</header>
+<nav class="nav" aria-label="Menu utama">
+  <div class="navin" id="navin">
+    <button type="button" data-view="hilal" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>Pengamatan</button>
+    <button type="button" data-view="kalender" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender Hijriah</button>
+    <button type="button" data-view="lapor" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18 10l-4-4L4 16v4zM13 7l4 4"/></svg>Lapor Rukyat</button>
+    <button type="button" data-view="tanya" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 10a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.8-1.1 1.6M12 16.5h.01"/></svg>Tanya HilalApp</button>
+    <button type="button" data-view="tentang" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Tentang</button>
+  </div>
+</nav>
+
+<main class="wrap simple" id="main">
+
+  <div class="view" id="v-hilal">
+
+  <section class="bar" id="bar" aria-label="Pengaturan pengamatan">
+    <label>Lokasi pengamat
+      <select id="preset"></select>
+    </label>
+    <label class="coord">Lintang (°, selatan negatif)
+      <input id="lat" type="number" step="0.0001" inputmode="decimal">
+    </label>
+    <label class="coord">Bujur (°, timur positif)
+      <input id="lon" type="number" step="0.0001" inputmode="decimal">
+    </label>
+    <label class="coord">Ketinggian (m dpl)
+      <input id="elev" type="number" step="1" min="0" inputmode="decimal">
+    </label>
+    <label class="coord">Zona waktu (UTC+)
+      <input id="tz" type="number" step="0.5" inputmode="decimal">
+    </label>
+    <label>Tanggal pengamatan (sore hari)
+      <input id="date" type="date">
+    </label>
+    <div class="btnrow">
+      <button id="prev" type="button">Ijtimak sebelumnya</button>
+      <button id="next" type="button">Ijtimak berikutnya</button>
+      <button id="geo" type="button">Pakai lokasi perangkat</button>
+    </div>
+  </section>
+  <p class="hint" id="geomsg">Ketinggian memengaruhi waktu terbenam matahari (dip ufuk). Pilih tanggal sore hari saat hilal akan diamati.</p>
+  <div class="note" id="note" role="status"></div>
+
+  <section class="stage" aria-label="Animasi langit barat saat matahari terbenam">
+    <div class="readout">
+      <div class="pct" id="elongv">–</div>
+      <div class="plabel">elongasi bulan (jarak sudut bulan dari matahari)</div>
+    </div>
+    <div class="clock"><b id="clk">--:--</b><span id="clkrel"></span></div>
+    <svg id="sky" viewBox="0 0 720 400" role="img" aria-label="Animasi posisi matahari dan hilal di langit barat saat matahari terbenam"></svg>
+  </section>
+  <div class="tl">
+    <div class="tlgrid">
+      <button id="play" class="primary" type="button">Jeda</button>
+      <div class="scrubwrap">
+        <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Waktu pada animasi">
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <select id="speed" aria-label="Kecepatan animasi"><option value="1">Normal</option><option value="0.5">Lambat</option><option value="2">Cepat</option></select>
+    </div>
+    <div class="tlfoot"><button id="jump" type="button">Lompat ke waktu terbaik</button><span class="phase" id="phase" role="status"></span></div>
+  </div>
+  <p class="skyfoot">Pandangan menghadap barat: kiri = selatan, kanan = utara. Ukuran piringan dan ketebalan sabit digambar berlebihan agar terlihat; posisi dan gerakannya mengikuti hitungan astronomi. Lingkaran hijau putus-putus menandai waktu terbaik mencari hilal.</p>
+
+  <section class="block" aria-labelledby="h-sum">
+    <h2 id="h-sum">Ringkasan sore pengamatan</h2>
+    <p class="sub" id="sumdate"></p>
+    <div class="facts" id="sumstats"></div>
+    <ul class="plain" id="sumlist"></ul>
+  </section>
+
+    <section class="block" aria-labelledby="h-glb">
+      <h2 id="h-glb">Globe peluang hilal dunia</h2>
+      <p class="sub">Pilih standar falakiyah, lalu lihat daerah mana saja di dunia yang sudah memenuhinya saat matahari terbenam. Geser globe untuk memutarnya, klik atau ketuk sebuah titik untuk rincian.</p>
+      <div class="gtop">
+        <label class="fld">Standar falakiyah<select id="g-org"></select></label>
+        <div class="fld"><span>Tampilan peta</span>
+          <div class="seg" role="group" aria-label="Mode peta"><button id="g-mst" type="button" aria-pressed="true">Standar terpenuhi</button><button id="g-mpl" type="button" aria-pressed="false">Peluang</button></div>
+        </div>
+        <label class="fld">Fokus ke<select id="g-focus"></select></label>
+      </div>
+      <div class="globewrap">
+        <div class="gstage"><canvas id="gcv" role="img" aria-label="Globe dunia dengan garis pantai, garis senja, dan peta standar atau peluang hilal"></canvas><div class="gbadge" id="gbadge"></div><div class="gprog" id="gprog"></div></div>
+        <div class="gctl">
+          <div class="panel">
+            <label class="fld">Tanggal (UT)<input id="g-date" type="date"></label>
+            <div class="btnrow">
+              <button id="g-prev" type="button">Ijtimak sebelumnya</button>
+              <button id="g-m1" type="button" aria-label="Mundur satu hari">−1 hari</button>
+              <button id="g-p1" type="button" aria-label="Maju satu hari">+1 hari</button>
+              <button id="g-next" type="button">Ijtimak berikutnya</button>
+            </div>
+            <label class="fld">Waktu<input id="g-time" type="range" min="0" max="1000" step="1" value="1000"><span id="g-timel" style="color:var(--ink)"></span></label>
+            <div class="btnrow">
+              <button id="g-play" type="button" class="primary">Jalankan waktu</button>
+              <button id="g-rot" type="button" class="tog" aria-pressed="true">Putar globe</button>
+            </div>
+            <label class="chk"><input type="checkbox" id="g-layer" checked>Tampilkan lapisan peta</label>
+            <p class="hint" id="gmeta"></p>
+          </div>
+          <div class="panel"><h3>Legenda</h3><div class="lg" id="g-legend"></div></div>
+          <div class="panel" id="ginfo"><p class="hint" style="margin:0">Klik atau ketuk sebuah titik pada globe untuk melihat rincian.</p></div>
+        </div>
+      </div>
+      <p class="gsum" id="g-sum"></p>
+    </section>
+    <section class="block" aria-labelledby="h-reg">
+      <h2 id="h-reg">Daerah yang memenuhi standar</h2>
+      <p class="sub">Persentase titik di tiap wilayah yang sudah memenuhi standar terpilih pada sore hari ini.</p>
+      <div class="reggrid" id="g-regions"></div>
+    </section>
+    <section class="block" aria-labelledby="h-cty">
+      <h2 id="h-cty">Status per kota</h2>
+      <p class="sub">Dihitung tepat pada koordinat tiap kota saat matahari terbenam setempat.</p>
+      <div id="g-cities"></div>
+    </section>
+  
+
+  </div>
+
+  <div class="view" id="v-kalender" hidden>
+    <section class="block first" aria-labelledby="h-kal">
+      <h2 id="h-kal">Kalender Hijriah</h2>
+      <p class="sub">Tanggal Hijriah dihitung dengan standar falakiyah pilihan Anda, lalu disajikan sebagai kalender yang mudah dibaca. Penetapan resmi tetap melalui keputusan organisasi dan Pemerintah.</p>
+      <div class="khero" id="k-hero"><div class="kh-now"><span class="kh-lab">Hari ini</span><b class="kh-h">Menghitung…</b></div></div>
+      <div class="kset">
+        <button id="k-org" type="button" class="ghost">Standar: MABIMS</button>
+        <label class="fld">Tahun Hijriah<select id="k-year"></select></label>
+        <label class="fld">Wilayah acuan<select id="k-ref"></select></label>
+        <button id="k-today" type="button">Ke bulan ini</button>
+      </div>
+      <p class="hint" id="k-hint"></p>
+    </section>
+
+    <section class="block" aria-labelledby="k-mtitle">
+      <div class="kmn">
+        <button id="k-prev" type="button" aria-label="Bulan sebelumnya">‹</button>
+        <div class="kmt"><h2 id="k-mtitle">…</h2><p id="k-msub"></p></div>
+        <button id="k-next" type="button" aria-label="Bulan berikutnya">›</button>
+      </div>
+      <div id="k-grid"></div>
+      <p class="hint" style="margin-top:12px">Angka besar adalah tanggal Hijriah, angka kecil tanggal Masehi. Lingkaran menandai hari ini, dan warna menandai hari besar.</p>
+      <p class="kmnote" id="k-mnote"></p>
+      <ul class="plain kmev" id="k-mevents"></ul>
+    </section>
+
+    <section class="block" aria-labelledby="h-cmp">
+      <h2 id="h-cmp">Perbandingan antar standar</h2>
+      <p class="sub" id="k-cmpsub"></p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Standar</th><th>Awal bulan</th><th>Selisih</th></tr></thead>
+          <tbody id="k-cmp"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="h-ev">
+      <h2 id="h-ev">Hari besar Islam</h2>
+      <p class="sub" id="k-evsub"></p>
+      <div class="evgrid" id="k-events"></div>
+    </section>
+
+    <section class="block" aria-labelledby="h-kd">
+      <details>
+        <summary id="h-kd">Rincian hisab tiap bulan</summary>
+        <p class="sub" style="margin-top:10px">Setiap bulan ditentukan pada sore hari ke-29: bila standar terpenuhi, bulan baru dimulai keesokan harinya, dan bila belum, bulan berjalan digenapkan 30 hari (istikmal).</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Bulan</th><th>Awal bulan</th><th class="num">Lama</th><th>Nilai sore ke-29 bulan sebelumnya</th><th id="k-thorg">Penetapan</th></tr></thead>
+            <tbody id="k-body"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <div class="view" id="v-lapor" hidden>
+    <section class="block first" aria-labelledby="h-lap">
+      <h2 id="h-lap">Formulir laporan rukyat</h2>
+      <p class="sub">Catat hasil pengamatan hilal Anda. Data hisab dihitung otomatis. Laporan disimpan hanya di perangkat ini.</p>
+      <div class="rgrid">
+        <div class="panel form">
+          <h3>Pengamat</h3>
+          <div class="row2">
+            <label class="fld">Nama pengamat<input id="r-nama" type="text" autocomplete="name"></label>
+            <label class="fld">Instansi atau pos rukyat (opsional)<input id="r-inst" type="text"></label>
+          </div>
+          <h3>Lokasi dan waktu</h3>
+          <label class="fld">Nama tempat pengamatan<input id="r-tempat" type="text" placeholder="Contoh: Pantai Pelabuhan Ratu"></label>
+          <label class="fld">Lokasi cepat<select id="r-preset"></select></label>
+          <div class="row2">
+            <label class="fld">Lintang (°, selatan negatif)<input id="r-lat" type="number" step="0.0001" inputmode="decimal"></label>
+            <label class="fld">Bujur (°, timur positif)<input id="r-lon" type="number" step="0.0001" inputmode="decimal"></label>
+            <label class="fld">Ketinggian (m dpl)<input id="r-elev" type="number" step="1" min="0" inputmode="decimal"></label>
+            <label class="fld">Zona waktu (UTC+)<input id="r-tz" type="number" step="0.5" inputmode="decimal"></label>
+          </div>
+          <label class="fld">Tanggal pengamatan (sore hari)<input id="r-date" type="date"></label>
+          <div class="btnrow" style="margin:0">
+            <button id="r-home" type="button">Samakan dengan tab Pengamatan</button>
+            <button id="r-geo" type="button">Pakai lokasi perangkat</button>
+          </div>
+          <h3>Kondisi dan alat</h3>
+          <div class="row2">
+            <label class="fld">Alat yang dipakai
+              <select id="r-alat"><option value="mata">Mata telanjang</option><option value="teropong" selected>Teropong binokuler</option><option value="teleskop">Teleskop</option><option value="teleskop_ccd">Teleskop dengan kamera atau CCD</option></select>
+            </label>
+            <label class="fld">Kondisi langit barat
+              <select id="r-langit"><option value="cerah">Cerah</option><option value="berawan_tipis">Berawan tipis</option><option value="berawan_sebagian">Berawan sebagian</option><option value="mendung">Mendung</option><option value="hujan">Hujan</option><option value="kabut">Kabut atau asap</option></select>
+            </label>
+          </div>
+          <label class="fld">Tutupan awan di ufuk barat
+            <div class="range"><input id="r-awan" type="range" min="0" max="100" step="5" value="0"><output id="r-awanv">0%</output></div>
+          </label>
+          <h3>Hasil pengamatan</h3>
+          <div class="radios" role="radiogroup" aria-label="Hasil pengamatan">
+            <label><input type="radio" name="r-hasil" value="ya">Hilal terlihat</label>
+            <label><input type="radio" name="r-hasil" value="tidak">Tidak terlihat</label>
+            <label><input type="radio" name="r-hasil" value="ragu">Ragu-ragu</label>
+          </div>
+          <div class="row2">
+            <label class="fld">Waktu pertama terlihat (jam setempat)<input id="r-tlihat" type="time"></label>
+            <label class="fld">Jumlah pengamat atau saksi<input id="r-saksi" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+          </div>
+          <label class="fld">Catatan (bentuk sabit, posisi, kendala)<textarea id="r-cat" rows="3"></textarea></label>
+          <div class="btnrow" style="margin:0">
+            <button id="r-save" type="button" class="primary">Simpan laporan</button>
+            <button id="r-reset" type="button">Kosongkan hasil</button>
+          </div>
+          <div class="msg" id="r-msg" role="status"></div>
+        </div>
+        <div class="panel">
+          <h3>Data hisab otomatis</h3>
+          <div id="r-hisab"></div>
+          <p class="hint" style="margin-top:14px">Nilai ini ikut tersimpan bersama laporan,.</p>
+        </div>
+      </div>
+    </section>
+    <section class="block" aria-labelledby="h-rl">
+      <h2 id="h-rl">Laporan tersimpan</h2>
+      <p class="sub" id="r-count"></p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Tempat dan pengamat</th><th>Hasil</th><th>Alat</th><th class="num">Tinggi / elongasi</th><th></th></tr></thead>
+          <tbody id="r-list"></tbody>
+        </table>
+      </div>
+      <p class="hint" id="r-empty">Belum ada laporan.</p>
+      <div class="btnrow" style="margin-top:14px">
+        <button id="r-dl" type="button" hidden>Unduh CSV</button>
+        <button id="r-clear" type="button">Hapus semua</button>
+      </div>
+      <details>
+        <summary>Teks CSV (untuk disalin)</summary>
+        <textarea id="r-csv" readonly rows="6" aria-label="Teks CSV laporan"></textarea>
+      </details>
+    </section>
+  </div>
+
+  <div class="view" id="v-tanya" hidden>
+    <section class="block first" aria-labelledby="h-ask">
+      <h2 id="h-ask">Tanya HilalApp</h2>
+      <p class="sub">Tanyakan apa saja seputar hilal, standar falakiyah, dan hasil pengamatan sore yang sedang Anda lihat. Jawaban memakai angka dari menu Pengamatan.</p>
+      <div class="askwrap">
+        <p class="askctx" id="ask-ctx"></p>
+        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Percakapan"></div>
+        <div class="askchips" id="ask-chips"></div>
+        <form class="askform" id="ask-form" autocomplete="off">
+          <input id="ask-in" type="text" maxlength="300" placeholder="Contoh: Kenapa hilal belum memenuhi standar?" aria-label="Pertanyaan Anda">
+          <button type="button" class="mic" id="ask-mic" aria-label="Bertanya dengan suara" aria-pressed="false" title="Bertanya dengan suara"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button type="submit" class="primary" id="ask-go">Kirim</button>
+        </form>
+        <div class="voicebar" id="ask-voicebar">
+          <label><input type="checkbox" id="ask-speak">Bacakan setiap jawaban</label>
+          <button type="button" id="ask-stop" hidden>Hentikan suara</button>
+        </div>
+        <div class="vstat" id="ask-vstat" role="status"></div>
+        <p class="hint" id="ask-mode"></p>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="v-tentang" hidden>
+    <section class="block first" aria-labelledby="h-abt">
+      <h2 id="h-abt">Tentang HilalApp</h2>
+      <p class="sub">HilalApp menghitung posisi matahari dan bulan, menyusun kalender Hijriah, mencatat laporan rukyat, dan memetakan status serta peluang hilal di globe dunia.</p>
+      <ul class="plain">
+        <li><b>Hisab.</b> Posisi matahari dan bulan memakai deret Meeus yang disingkat. Galat posisi bulan sekitar 0,01°–0,03°. Refraksi atmosfer dan cuaca setempat tidak dihitung.</li>
+        <li><b>Kriteria.</b> MABIMS baru (tinggi ≥ 3°, elongasi ≥ 6,4°), Muhammadiyah KHGT (tinggi ≥ 5°, elongasi ≥ 8°), Odeh (2004), dan kriteria kustom.</li>
+        <li><b>Tanya HilalApp.</b> Menjawab pertanyaan seputar hilal memakai hasil hitungan sore pengamatan yang sedang Anda lihat. Jawabannya tidak menetapkan awal bulan.</li>
+        <li><b>Privasi.</b> Seluruh perhitungan dan laporan berada di perangkat Anda. Fitur Tanya HilalApp bersifat opsional: bila memakai AI di server atau suara, pertanyaan (dan audio suara pada peramban tertentu) diproses layanan tersebut.</li>
+      </ul>
+      <div class="safety"><b>Keselamatan mata.</b> Jangan mengarahkan teropong atau teleskop ke langit barat sebelum matahari benar-benar terbenam.</div>
+    </section>
+  </div>
+
+  <footer>
+    <p>HilalApp adalah alat bantu hisab dan edukasi. Ephemeris memakai deret Meeus yang disingkat (galat posisi bulan sekitar 0,01°–0,03°), tanpa koreksi refraksi atmosfer dan cuaca setempat.</p>
+    <p>Peluang pada peta globe adalah taksiran dari tinggi bulan dan elongasi menurut standar terpilih, bukan penetapan awal bulan. Penetapan resmi tetap mengikuti rukyat dan sidang isbat.</p>
+    <p class="credit">Dipersembahkan oleh <b>Hilaltech</b></p>
+  </footer>
+</main>
+</div>
+
+<script>
+//<ENGINE>
+"use strict";
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const norm=d=>((d%360)+360)%360;
+const n180=d=>{d=norm(d);return d>180?d-360:d;};
+const DT=69;           // TT-UT dalam detik
+const SYN=29.530588861, K0JD=2451550.09766;
+
+// Suku periodik Bulan (Meeus bab 47): [D,M,M',F, Σl(1e-6°), Σr(1e-3 km)]
+const LR=[
+[0,0,1,0,6288774,-20905355],[2,0,-1,0,1274027,-3699111],[2,0,0,0,658314,-2955968],[0,0,2,0,213618,-569925],
+[0,1,0,0,-185116,48888],[0,0,0,2,-114332,-3149],[2,0,-2,0,58793,246158],[2,-1,-1,0,57066,-152138],
+[2,0,1,0,53322,-170733],[2,-1,0,0,45758,-204586],[0,1,-1,0,-40923,-129620],[1,0,0,0,-34720,108743],
+[0,1,1,0,-30383,104755],[2,0,0,-2,15327,10321],[0,0,1,2,-12528,0],[0,0,1,-2,10980,79661],
+[4,0,-1,0,10675,-34782],[0,0,3,0,10034,-23210],[4,0,-2,0,8548,-21636],[2,1,-1,0,-7888,24208],
+[2,1,0,0,-6766,30824],[1,0,-1,0,-5163,-8379],[1,1,0,0,4987,-16675],[2,-1,1,0,4036,-12831],
+[2,0,2,0,3994,-10445],[4,0,0,0,3861,-11650],[2,0,-3,0,3665,14403],[0,1,-2,0,-2689,-7003],
+[2,0,-1,2,-2602,0],[2,-1,-2,0,2390,10056],[1,0,1,0,-2348,6322],[2,-2,0,0,2236,-9884],
+[0,1,2,0,-2120,5751],[0,2,0,0,-2069,0],[2,-2,-1,0,2048,-4950],[2,0,1,-2,-1773,4130],
+[2,0,0,2,-1595,0],[4,-1,-1,0,1215,0],[0,0,2,2,-1110,0],[3,0,-1,0,-892,0],[2,1,1,0,-810,0],
+[4,-1,-2,0,759,0],[0,2,-1,0,-713,0],[2,2,-1,0,-700,0],[2,1,-2,0,691,0],[2,-1,0,-2,596,0],
+[4,0,1,0,549,0],[0,0,4,0,537,0],[4,-1,0,0,520,0],[1,0,-2,0,-487,0],[2,1,0,-2,-399,0],
+[0,0,2,-2,-381,0],[1,1,1,0,351,0],[3,0,-2,0,-340,0],[4,0,-3,0,330,0],[2,-1,2,0,327,0],
+[0,2,1,0,-323,0],[1,1,-1,0,299,0],[2,0,3,0,294,0]
+];
+// Lintang bulan: [D,M,M',F, Σb(1e-6°)]
+const BB=[
+[0,0,0,1,5128122],[0,0,1,1,280602],[0,0,1,-1,277693],[2,0,0,-1,173237],[2,0,-1,1,55413],
+[2,0,-1,-1,46271],[2,0,0,1,32573],[0,0,2,1,17198],[2,0,1,-1,9266],[0,0,2,-1,8822],
+[2,-1,0,-1,8216],[2,0,-2,-1,4324],[2,0,1,1,4200],[2,1,0,-1,-3359],[2,-1,-1,1,2463],
+[2,-1,0,1,2211],[2,-1,-1,-1,2065],[0,1,-1,-1,-1870],[4,0,-1,-1,1828],[0,1,0,1,-1794],
+[0,0,0,3,-1749],[0,1,-1,1,-1565],[1,0,0,1,-1491],[0,1,1,1,-1475],[0,1,1,-1,-1410],
+[0,1,0,-1,-1344],[1,0,0,-1,-1335],[0,0,3,1,1107],[4,0,0,-1,1021],[4,0,-1,1,833]
+];
+
+function ecl2eq(lon,lat,eps){
+  const l=rad(lon),b=rad(lat),e=rad(eps);
+  const ra=Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l));
+  const dec=Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));
+  return {ra:norm(deg(ra)),dec:deg(dec)};
+}
+function common(jd){
+  const T=(jd+DT/86400-2451545)/36525;
+  const Om=125.04452-1934.136261*T;
+  const dpsi=-0.00478*Math.sin(rad(Om));
+  const eps=23.439291-0.0130042*T+0.00256*Math.cos(rad(Om));
+  const gast=norm(280.46061837+360.98564736629*(jd-2451545)+0.000387933*T*T+dpsi*Math.cos(rad(eps)));
+  return {T,Om,dpsi,eps,gast};
+}
+function sunEq(jd){
+  const c=common(jd),T=c.T;
+  const L0=norm(280.46646+36000.76983*T+0.0003032*T*T);
+  const M=norm(357.52911+35999.05029*T-0.0001537*T*T);
+  const e=0.016708634-0.000042037*T, Mr=rad(M);
+  const C=(1.914602-0.004817*T)*Math.sin(Mr)+0.019993*Math.sin(2*Mr)+0.000289*Math.sin(3*Mr);
+  const R=1.000001018*(1-e*e)/(1+e*Math.cos(rad(M+C)));
+  const lon=norm(L0+C-0.00569+c.dpsi);
+  const q=ecl2eq(lon,0,c.eps);
+  return {lon,R,ra:q.ra,dec:q.dec,gast:c.gast};
+}
+function moonEq(jd){
+  const c=common(jd),T=c.T;
+  const Lp=norm(218.3164477+481267.88123421*T-0.0015786*T*T);
+  const D=norm(297.8501921+445267.1114034*T-0.0018819*T*T);
+  const M=norm(357.5291092+35999.0502909*T-0.0001536*T*T);
+  const Mp=norm(134.9633964+477198.8675055*T+0.0087414*T*T);
+  const F=norm(93.2720950+483202.0175233*T-0.0036539*T*T);
+  const E=1-0.002516*T-0.0000074*T*T;
+  const A1=rad(119.75+131.849*T),A2=rad(53.09+479264.290*T),A3=rad(313.45+481266.484*T);
+  const d=rad(D),m=rad(M),mp=rad(Mp),f=rad(F),lp=rad(Lp);
+  let sl=0,sr=0,sb=0;
+  for(let i=0;i<LR.length;i++){
+    const r=LR[i],a=r[0]*d+r[1]*m+r[2]*mp+r[3]*f;
+    const am=Math.abs(r[1]), e=am===0?1:(am===1?E:E*E);
+    sl+=r[4]*e*Math.sin(a);
+    if(r[5]) sr+=r[5]*e*Math.cos(a);
+  }
+  for(let i=0;i<BB.length;i++){
+    const r=BB[i],a=r[0]*d+r[1]*m+r[2]*mp+r[3]*f;
+    const am=Math.abs(r[1]), e=am===0?1:(am===1?E:E*E);
+    sb+=r[4]*e*Math.sin(a);
+  }
+  sl+=3958*Math.sin(A1)+1962*Math.sin(lp-f)+318*Math.sin(A2);
+  sb+=-2235*Math.sin(lp)+382*Math.sin(A3)+175*Math.sin(A1-f)+175*Math.sin(A1+f)+127*Math.sin(lp-mp)-115*Math.sin(lp+mp);
+  const lon=norm(Lp+sl/1e6+c.dpsi), lat=sb/1e6, dist=385000.56+sr/1000;
+  const q=ecl2eq(lon,lat,c.eps);
+  return {lon,lat,dist,ra:q.ra,dec:q.dec,gast:c.gast};
+}
+function altaz(ra,dec,gast,lat,lon){
+  const H=rad(gast+lon-ra),p=rad(lat),dl=rad(dec);
+  const sinh=Math.sin(p)*Math.sin(dl)+Math.cos(p)*Math.cos(dl)*Math.cos(H);
+  const y=-Math.cos(dl)*Math.sin(H);
+  const x=Math.sin(dl)*Math.cos(p)-Math.cos(dl)*Math.sin(p)*Math.cos(H);
+  return {alt:deg(Math.asin(sinh)),az:norm(deg(Math.atan2(y,x)))};
+}
+function sunHor(jd,lat,lon){const s=sunEq(jd);const a=altaz(s.ra,s.dec,s.gast,lat,lon);return {alt:a.alt,az:a.az,R:s.R};}
+function moonHor(jd,lat,lon){
+  const m=moonEq(jd),a=altaz(m.ra,m.dec,m.gast,lat,lon);
+  const sinpi=6378.14/m.dist, hr=rad(a.alt);
+  const alt=deg(Math.atan2(Math.sin(hr)-sinpi,Math.cos(hr)));       // toposentrik
+  const sdGeo=deg(Math.asin(0.2725076*sinpi));
+  const sd=sdGeo*m.dist/(m.dist-6378.14*Math.sin(hr));
+  return {alt,altGeo:a.alt,az:a.az,dist:m.dist,sd};
+}
+function conjunction(k){
+  let jd=K0JD+SYN*k;
+  for(let i=0;i<10;i++){
+    const d=n180(moonEq(jd).lon-sunEq(jd).lon);
+    jd-=d/12.19;
+  }
+  return jd;
+}
+function findSunset(jdNoon,lat,lon,elev){
+  const target=-0.8333-1.76*Math.sqrt(Math.max(elev||0,0))/60;
+  const f=jd=>sunHor(jd,lat,lon).alt-target;
+  let a=jdNoon,fa=f(a);
+  if(fa<0) return null;
+  for(let i=1;i<=90;i++){
+    const b=jdNoon+i*10/1440,fb=f(b);
+    if(fb<0){
+      let lo=a,hi=b;
+      for(let j=0;j<32;j++){const mid=(lo+hi)/2; if(f(mid)>=0) lo=mid; else hi=mid;}
+      return {jd:(lo+hi)/2,target};
+    }
+    a=b;fa=fb;
+  }
+  return null;
+}
+function findMoonset(ts,lat,lon){
+  const g=jd=>{const m=moonHor(jd,lat,lon);return m.alt+0.5667+m.sd;};
+  const g0=g(ts);
+  if(g0>=0){
+    let a=ts;
+    for(let i=1;i<=72;i++){
+      const b=ts+i*10/1440;
+      if(g(b)<0){
+        let lo=a,hi=b;
+        for(let j=0;j<30;j++){const mid=(lo+hi)/2; if(g(mid)>=0) lo=mid; else hi=mid;}
+        return ((lo+hi)/2-ts)*1440;
+      }
+      a=b;
+    }
+    return null;
+  }else{
+    let a=ts;
+    for(let i=1;i<=72;i++){
+      const b=ts-i*10/1440;
+      if(g(b)>=0){
+        let lo=b,hi=a;
+        for(let j=0;j<30;j++){const mid=(lo+hi)/2; if(g(mid)>=0) lo=mid; else hi=mid;}
+        return ((lo+hi)/2-ts)*1440;
+      }
+      a=b;
+    }
+    return null;
+  }
+}
+// Analisis satu sore: parameter hilal saat matahari terbenam
+const refr=h=>{const hh=Math.max(h,-0.9);return 1.02/Math.tan(rad(hh+10.3/(hh+5.11)))/60;};
+function evening(jdNoon,loc,k,jcGiven,noLag){
+  const ss=findSunset(jdNoon,loc.lat,loc.lon,loc.elev);
+  if(!ss) return null;
+  const ts=ss.jd;
+  if(k===null||k===undefined) k=Math.round((ts-K0JD)/SYN);
+  const jc=(jcGiven!==undefined&&jcGiven!==null)?jcGiven:conjunction(k);
+  const sh=sunHor(ts,loc.lat,loc.lon), mh=moonHor(ts,loc.lat,loc.lon);
+  const daz=n180(mh.az-sh.az);
+  const cosPsi=Math.sin(rad(sh.alt))*Math.sin(rad(mh.alt))+Math.cos(rad(sh.alt))*Math.cos(rad(mh.alt))*Math.cos(rad(daz));
+  const psi=deg(Math.acos(Math.max(-1,Math.min(1,cosPsi))));
+  const w=mh.sd*60*(1-cosPsi);
+  const Sx=sunEq(ts),Mx=moonEq(ts);
+  const cg=Math.sin(rad(Sx.dec))*Math.sin(rad(Mx.dec))+Math.cos(rad(Sx.dec))*Math.cos(rad(Mx.dec))*Math.cos(rad(Sx.ra-Mx.ra));
+  const elongG=deg(Math.acos(Math.max(-1,Math.min(1,cg))));
+  return {k,jc,ts,alt:mh.alt,altR:mh.alt+refr(mh.alt),elongG,elong:psi,daz,arcv:mh.alt-sh.alt,w,illum:(1-cosPsi)/2,
+    lag:noLag?null:findMoonset(ts,loc.lat,loc.lon),age:(ts-jc)*24,
+    moonAz:mh.az,sunAz:sh.az,sunAlt:sh.alt,dist:mh.dist,sd:mh.sd*60};
+}
+function criteria(r){
+  const w=r.w,poly=-0.1018*w*w*w+0.7319*w*w-6.3226*w;
+  const V=r.arcv-(poly+7.1651), q=(r.arcv-(11.8371+poly))/10;
+  const oz=V>=5.65?['A','Terlihat dengan mata telanjang','ok']:V>=2?['B','Dengan alat optik, mungkin mata telanjang','mid']:V>=-0.96?['C','Hanya dengan alat optik','mid']:['D','Tidak terlihat','no'];
+  const yz=q>0.216?['A','Mudah terlihat','ok']:q>-0.014?['B','Terlihat dalam kondisi sempurna','ok']:q>-0.160?['C','Mungkin perlu alat optik','mid']:q>-0.232?['D','Perlu alat optik','mid']:q>-0.293?['E','Tidak terlihat dengan teleskop biasa','no']:['F','Tidak terlihat','no'];
+  return {V,q,oz,yz,
+    wujud:r.age>0&&r.alt>0,
+    mabims:r.age>0&&r.altR>=3&&r.elongG>=6.4};
+}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function localNoon(jd,tz){
+  const d=new Date((jd-2440587.5)*864e5+tz*36e5);
+  return (Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),12)-tz*36e5)/864e5+2440587.5;
+}
+function trajectory(r,loc){
+  const lag=r.lag===null?30:r.lag;
+  const end=Math.round(Math.min(Math.max(lag+15,50),130));
+  const fr=[];
+  for(let m=-35;m<=end;m++){
+    const jd=r.ts+m/1440,sh=sunHor(jd,loc.lat,loc.lon),mh=moonHor(jd,loc.lat,loc.lon);
+    fr.push({m,sa:sh.alt,saz:sh.az,ma:mh.alt,maz:mh.az});
+  }
+  return fr;
+}
+//</ENGINE>
+
+// ====================== UI ======================
+const $=id=>document.getElementById(id);
+const f=(x,d=1)=>Number.isFinite(x)?x.toFixed(d).replace('.',','):'–';
+const HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const pad=n=>String(n).padStart(2,'0');
+function parts(jd,tz){
+  const d=new Date((jd-2440587.5)*864e5+tz*36e5);
+  return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate(),hh:d.getUTCHours(),mm:d.getUTCMinutes(),ss:d.getUTCSeconds(),wd:d.getUTCDay()};
+}
+function fmtTime(jd,tz,sec){const p=parts(jd,tz);return pad(p.hh)+':'+pad(p.mm)+(sec?':'+pad(p.ss):'');}
+function fmtDate(jd,tz){const p=parts(jd,tz);return p.d+' '+BULAN[p.m]+' '+p.y;}
+function fmtDay(jd,tz){const p=parts(jd,tz);return HARI[p.wd]+', '+p.d+' '+BULAN[p.m]+' '+p.y;}
+function tzName(tz){return tz===7?'WIB':tz===8?'WITA':tz===9?'WIT':'UTC'+(tz>=0?'+':'')+tz;}
+function dateInputValue(jd,tz){const p=parts(jd,tz);return p.y+'-'+pad(p.m+1)+'-'+pad(p.d);}
+function noonFromInput(v,tz){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');
+  if(!m) return null;
+  return (Date.UTC(+m[1],+m[2]-1,+m[3],12)-tz*36e5)/864e5+2440587.5;
+}
+
+const PRESETS=[
+ ['Jakarta',-6.2088,106.8456,8,7],
+ ['Observatorium Bosscha, Lembang',-6.8236,107.6167,1310,7],
+ ['Pelabuhan Ratu, Sukabumi',-6.9833,106.5500,10,7],
+ ['Banda Aceh',5.5483,95.3238,5,7],
+ ['Makassar',-5.1477,119.4327,10,8],
+ ['Kupang',-10.1772,123.6070,10,8],
+ ['Jayapura',-2.5337,140.7181,5,9],
+ ['Kuala Lumpur',3.1390,101.6869,20,8],
+ ['Makkah',21.4225,39.8262,277,3],
+ ['Kustom',null,null,null,null]
+];
+const pre=$('preset');
+PRESETS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];pre.appendChild(o);});
+function applyPreset(i){
+  const p=PRESETS[i];
+  if(p[1]===null) return;
+  $('lat').value=p[1];$('lon').value=p[2];$('elev').value=p[3];$('tz').value=p[4];
+}
+function getLoc(){
+  const lat=parseFloat($('lat').value),lon=parseFloat($('lon').value),elev=parseFloat($('elev').value)||0,tz=parseFloat($('tz').value);
+  if(![lat,lon,tz].every(Number.isFinite)||Math.abs(lat)>66||Math.abs(lon)>180) return null;
+  return {lat,lon,elev,tz};
+}
+
+const tick=()=>new Promise(res=>setTimeout(res,0));
+
+// ---- Langit: animasi matahari terbenam ----
+function crescentPath(R,k){
+  const rx=Math.abs(1-2*k)*R,sweep=k<0.5?0:1;
+  return 'M0,'+(-R)+' A'+R+','+R+' 0 0 1 0,'+R+' A'+rx.toFixed(2)+','+R+' 0 0 '+sweep+' 0,'+(-R)+' Z';
+}
+let starRng=mulberry32(99);
+const STARS=Array.from({length:80},()=>({x:starRng()*720,y:starRng()*230,r:0.4+starRng()*1.1,o:0.3+starRng()*0.6}));
+const reduceMotion=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const SCN={traj:null,r:null,loc:null,f:0,playing:!reduceMotion,speed:1,hold:0,geom:null,bestM:null,kd:0.1,m0:0,last:0};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+function mixc(a,b,t){const A=hex(a),B=hex(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');}
+const SKY=[[6,'#4A78B8','#9DBBDD','#F2D6A8'],[0,'#2F4A8A','#7C6AA6','#F2A35E'],[-3,'#1E2A63','#5A4B8A','#E0805F'],[-6,'#121A47','#34306B','#A6577A'],[-10,'#0A1030','#1B1E54','#5A3A74'],[-18,'#050818','#0A1030','#141B45']];
+function skyAt(a){
+  if(a>=SKY[0][0]) return SKY[0].slice(1);
+  for(let i=0;i<SKY.length-1;i++){
+    const hi=SKY[i],lo=SKY[i+1];
+    if(a<=hi[0]&&a>=lo[0]){const t=(hi[0]-a)/(hi[0]-lo[0]);return [1,2,3].map(j=>mixc(hi[j],lo[j],t));}
+  }
+  return SKY[SKY.length-1].slice(1);
+}
+function setupScene(r,loc){
+  const traj=trajectory(r,loc);
+  const azMid=r.sunAz+r.daz/2;
+  let maxAlt=0,maxDx=0;
+  traj.forEach(q=>{
+    maxAlt=Math.max(maxAlt,q.sa,q.ma);
+    maxDx=Math.max(maxDx,Math.abs(n180(q.saz-azMid)),Math.abs(n180(q.maz-azMid)));
+  });
+  const ppd=Math.max(4,Math.min(14,262/(maxAlt+3),330/(maxDx+4)));
+  SCN.traj=traj;SCN.r=r;SCN.loc=loc;SCN.geom={hor:300,ppd,azMid};
+  SCN.bestM=(r.lag!==null&&r.lag>0&&r.age>0)?4/9*r.lag:null;
+  SCN.kd=Math.min(0.5,Math.max(0.06,0.06+3*r.illum));
+  SCN.m0=traj[0].m;
+  buildScene();buildTicks();
+  SCN.hold=0;
+  SCN.f=reduceMotion?clamp((SCN.bestM!==null?SCN.bestM:0)-SCN.m0,0,traj.length-1):0;
+  syncPlayBtn();renderFrame();
+}
+function buildScene(){
+  const hor=SCN.geom.hor;
+  let s='<defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop id="k0" offset="0" stop-color="#090E2A"/><stop id="k1" offset=".6" stop-color="#26285C"/><stop id="k2" offset="1" stop-color="#F2A35E"/></linearGradient>'+
+   '<radialGradient id="glowg"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".95"/><stop offset=".35" stop-color="#FFB86B" stop-opacity=".45"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient></defs>'+
+   '<rect width="720" height="'+hor+'" fill="url(#skyg)"/><g id="stars">';
+  STARS.forEach(t=>{s+='<circle cx="'+t.x.toFixed(1)+'" cy="'+t.y.toFixed(1)+'" r="'+t.r.toFixed(2)+'" fill="#FFF7E0" opacity="'+(t.o*Math.max(0,1-t.y/250)).toFixed(2)+'"/>';});
+  s+='</g><circle id="glow" r="170" fill="url(#glowg)" opacity="0"/><circle id="sun" r="12" fill="#FFE7B8"/>'+
+   '<text id="sunl" class="lbl" text-anchor="middle">Matahari</text>'+
+   '<line id="elg" class="x" stroke="#F6EFD9" stroke-opacity=".5" stroke-dasharray="4 5"/><text id="elgl" class="x lbl" text-anchor="middle" style="font-size:12px"></text>'+
+   '<g id="moon"><g id="ring"><circle r="28" fill="none" stroke="#6FD6C2" stroke-width="1.6" stroke-dasharray="5 5"/></g>'+
+   '<g id="mrot"><circle r="12" fill="#F6EFD9" fill-opacity=".10" stroke="#F6EFD9" stroke-opacity=".25"/><path id="mcres" d="'+crescentPath(12,SCN.kd)+'" fill="#F6EFD9"/></g></g>'+
+   '<text id="moonl" class="lbl" text-anchor="middle">Hilal</text><text id="ringl" class="lbl" text-anchor="middle" style="fill:#6FD6C2">Cari hilal di sini</text>'+
+   '<rect y="'+hor+'" width="720" height="'+(400-hor)+'" fill="#070B1C"/><line x1="0" y1="'+hor+'" x2="720" y2="'+hor+'" stroke="#F2A35E" stroke-opacity=".6"/>'+
+   '<text x="16" y="372" font-size="13" fill="#9AA3C8">selatan</text><text x="704" y="372" font-size="13" fill="#9AA3C8" text-anchor="end">utara</text><text x="360" y="372" font-size="13" fill="#9AA3C8" text-anchor="middle">menghadap barat</text>';
+  $('sky').innerHTML=s;
+}
+function buildTicks(){
+  const T=SCN.traj,n=T.length,m0=T[0].m,span=T[n-1].m-m0,r=SCN.r;
+  const items=[[0,'Matahari terbenam']];
+  if(SCN.bestM!==null) items.push([SCN.bestM,'Waktu terbaik']);
+  if(r.lag!==null&&r.lag>m0+2&&r.lag<T[n-1].m-2&&Math.abs(r.lag)>3) items.push([r.lag,'Bulan terbenam']);
+  items.sort((a,b)=>a[0]-b[0]);
+  $('ticks').innerHTML=items.map((it,i)=>'<div class="tick" style="left:'+((it[0]-m0)/span*100).toFixed(1)+'%;top:'+(i%2?20:0)+'px"><i></i><span>'+it[1]+'</span></div>').join('');
+}
+function frameAt(f){
+  const T=SCN.traj,i=clamp(Math.floor(f),0,T.length-2),t=clamp(f-i,0,1),a=T[i],b=T[i+1];
+  const L=(x,y)=>x+(y-x)*t,A=(x,y)=>x+n180(y-x)*t;
+  return {m:L(a.m,b.m),sa:L(a.sa,b.sa),saz:A(a.saz,b.saz),ma:L(a.ma,b.ma),maz:A(a.maz,b.maz)};
+}
+function renderFrame(){
+  const T=SCN.traj;if(!T||T.length<2||!$('k0')) return;
+  const g=SCN.geom,hor=g.hor,ppd=g.ppd,r=SCN.r,loc=SCN.loc;
+  SCN.f=clamp(SCN.f,0,T.length-1);
+  const q=frameAt(SCN.f);
+  const X=az=>360+n180(az-g.azMid)*ppd,Y=a=>hor-a*ppd;
+  const sx=X(q.saz),sy=Y(q.sa),mx=X(q.maz),my=Y(q.ma);
+  const cols=skyAt(q.sa);
+  $('k0').setAttribute('stop-color',cols[0]);$('k1').setAttribute('stop-color',cols[1]);$('k2').setAttribute('stop-color',cols[2]);
+  $('stars').setAttribute('opacity',clamp((-q.sa-3)/9,0,1).toFixed(2));
+  const gl=$('glow');gl.setAttribute('cx',sx.toFixed(1));gl.setAttribute('cy',sy.toFixed(1));gl.setAttribute('opacity',clamp((q.sa+14)/16,0,1).toFixed(2));
+  const sun=$('sun');sun.setAttribute('cx',sx.toFixed(1));sun.setAttribute('cy',sy.toFixed(1));sun.setAttribute('fill',mixc('#FFF3C9','#FF9A4D',clamp((9-q.sa)/9,0,1)));
+  const sl=$('sunl');sl.setAttribute('x',clamp(sx,50,670).toFixed(1));sl.setAttribute('y',Math.max(18,sy-24).toFixed(1));sl.setAttribute('visibility',q.sa>-0.3?'visible':'hidden');
+  const mv=q.ma>-1.0,ml_on=q.ma>0.3;
+  $('moon').setAttribute('transform','translate('+mx.toFixed(1)+','+my.toFixed(1)+')');
+  $('moon').setAttribute('visibility',mv?'visible':'hidden');
+  $('mrot').setAttribute('transform','rotate('+deg(Math.atan2(sy-my,sx-mx)).toFixed(1)+')');
+  const cr=$('mcres');
+  cr.setAttribute('fill',mixc('#F6EFD9','#FFB36B',clamp((6-q.ma)/6,0,1)*0.8));
+  cr.setAttribute('opacity',(0.35+0.65*clamp((-q.sa-0.8)/5,0,1)).toFixed(2));
+  const inBest=SCN.bestM!==null&&Math.abs(q.m-SCN.bestM)<=5&&mv;
+  $('ring').setAttribute('visibility',inBest?'visible':'hidden');
+  const ml=$('moonl'),rl=$('ringl');
+  ml.setAttribute('x',clamp(mx,50,670).toFixed(1));ml.setAttribute('y',Math.max(18,my-24).toFixed(1));ml.setAttribute('visibility',ml_on&&!inBest?'visible':'hidden');
+  rl.setAttribute('x',clamp(mx,80,640).toFixed(1));rl.setAttribute('y',Math.max(18,my-38).toFixed(1));rl.setAttribute('visibility',inBest?'visible':'hidden');
+  const both=mv&&q.sa>-0.3;
+  const el=$('elg');el.setAttribute('x1',sx.toFixed(1));el.setAttribute('y1',sy.toFixed(1));el.setAttribute('x2',mx.toFixed(1));el.setAttribute('y2',my.toFixed(1));el.setAttribute('visibility',both?'visible':'hidden');
+  const eg=$('elgl');eg.setAttribute('x',clamp((sx+mx)/2,60,660).toFixed(1));eg.setAttribute('y',((sy+my)/2-8).toFixed(1));eg.textContent='elongasi '+f(r.elong,1)+'°';eg.setAttribute('visibility',both?'visible':'hidden');
+  const tz=loc.tz,mm=Math.round(q.m);
+  $('clk').textContent=fmtTime(r.ts+q.m/1440,tz,false)+' '+tzName(tz);
+  $('clkrel').textContent=mm===0?'saat matahari terbenam':mm<0?(-mm)+' menit sebelum matahari terbenam':mm+' menit setelah matahari terbenam';
+  const set=-0.8333-1.76*Math.sqrt(Math.max(loc.elev,0))/60;
+  let ph;
+  if(q.sa>set) ph='Matahari belum terbenam. Langit masih terang dan hilal belum tampak.';
+  else if(q.ma<-0.8) ph='Bulan sudah terbenam di bawah ufuk.';
+  else if(inBest) ph='Waktu terbaik: langit cukup gelap dan bulan belum terlalu rendah.';
+  else if(q.sa>-4) ph='Matahari baru terbenam. Langit barat masih terang.';
+  else ph='Langit makin gelap dan bulan makin dekat ke ufuk.';
+  $('phase').textContent=ph;
+  if(SCN.playing) $('scrub').value=Math.round(SCN.f/(T.length-1)*1000);
+}
+function syncPlayBtn(){$('play').textContent=SCN.playing?'Jeda':'Putar';}
+function loop(now){
+  const dt=Math.min(0.1,Math.max(0,(now-SCN.last)/1000));SCN.last=now;
+  if(VIEW==='hilal'&&SCN.playing&&SCN.traj){
+    const n=SCN.traj.length;
+    if(SCN.hold>0){SCN.hold-=dt;if(SCN.hold<=0) SCN.f=0;}
+    else{SCN.f+=dt*SCN.speed*(n-1)/18;if(SCN.f>=n-1){SCN.f=n-1;SCN.hold=1.6;}}
+    renderFrame();
+  }
+  requestAnimationFrame(loop);
+}
+function compass(az){return ['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'][Math.round(norm(az)/45)%8];}
+function armSpan(d){d=Math.abs(d);return d>=6?f(d/10,1)+' kepalan tangan':Math.max(1,Math.round(d))+' lebar jari kelingking';}
+function renderSummary(r,c,loc){
+  const tz=loc.tz,z=tzName(tz),bestM=SCN.bestM,tSet=fmtTime(r.ts,tz,false)+' '+z;
+  $('sumdate').textContent=fmtDay(r.ts,tz)+', matahari terbenam pukul '+tSet+'.';
+  const up=r.alt>0&&r.age>0;
+  $('sumstats').innerHTML=
+    factHTML(f(r.alt,1)+'°','Tinggi hilal saat matahari terbenam',up?'sekitar '+armSpan(r.alt)+' di atas ufuk':'di bawah ufuk, tidak tampak')+
+    factHTML(bestM!==null?fmtTime(r.ts+bestM/1440,tz,false)+' '+z:'–','Waktu terbaik mencari',bestM!==null?'sekitar '+Math.round(bestM)+' menit setelah matahari terbenam':'tidak ada kesempatan')+
+    factHTML(r.lag!==null&&r.lag>0?Math.round(r.lag)+' menit':'0 menit','Bulan masih di atas ufuk',r.lag!==null&&r.lag>0?'setelah matahari terbenam':'bulan terbenam lebih dulu');
+  const L=[];
+  if(r.age<=0) L.push('Ijtimak belum terjadi saat matahari terbenam, jadi belum ada hilal pada sore ini.');
+  else if(r.lag!==null&&r.lag<=0) L.push('Bulan terbenam lebih dulu daripada matahari, sehingga hilal tidak mungkin terlihat sore ini.');
+  else L.push('Matahari terbenam pukul '+tSet+'. Bulan baru terbenam sekitar '+Math.round(r.lag===null?0:r.lag)+' menit sesudahnya.');
+  if(up) L.push('Arahkan pandangan ke ufuk '+compass(r.sunAz)+' (azimuth '+f(r.sunAz,0)+'°), tepat di titik matahari terbenam. Hilal berada sekitar '+armSpan(r.alt)+' di atas ufuk dan sekitar '+armSpan(r.daz)+' di sebelah '+(r.daz>=0?'utara':'selatan')+' titik itu.');
+  if(bestM!==null) L.push('Mulailah mengamati sekitar pukul '+fmtTime(r.ts+bestM/1440,tz,false)+' '+z+'. Pada saat itu langit sudah cukup gelap tetapi bulan belum terlalu rendah.');
+  if(r.age>0){
+    L.push('Menurut standar '+ORG.short+', syarat '+(orgTest(ORG,r)?'sudah terpenuhi':'belum terpenuhi')+' di lokasi ini ('+orgValues(ORG,r)+').');
+    const sc=scopeCheck(ORG,r,$('date').value);
+    if(sc) L.push('Di lingkup '+(sc.sc.key==='global'?'seluruh dunia':'Indonesia')+', '+sc.n+' dari '+sc.total+' titik acuan memenuhi'+(sc.best?' (nilai terbaik dekat '+nearestCity(sc.best.loc.lat,sc.best.loc.lon)+': '+orgValues(ORG,sc.best.r)+')':'')+'. '+(sc.n>0?'Awal bulan jatuh keesokan harinya menurut standar ini.':'Bulan berjalan digenapkan 30 hari menurut standar ini.'));
+  }
+  $('sumlist').innerHTML=L.map(t=>'<li>'+t+'</li>').join('');
+}
+
+// ---- Render hasil ----
+let STATE={k:null,r:null,loc:null};
+function factHTML(v,label,sub){return '<div class="fact"><b>'+v+'</b><span>'+label+'</span>'+(sub?'<small>'+sub+'</small>':'')+'</div>';}
+function tag(c,text){return '<span class="tag '+c+'">'+text+'</span>';}
+
+function syncCustom(){$('bar').classList.toggle('custom',+pre.value===PRESETS.length-1);}
+function update(){
+  syncCustom();
+  const loc=getLoc(),noon=loc?noonFromInput($('date').value,loc.tz):null;
+  if(!loc||noon===null){$('note').textContent='Lengkapi lintang, bujur, zona waktu, dan tanggal. Lintang yang didukung: −66° sampai 66°.';return;}
+  const r=evening(noon,loc,null);
+  if(!r){$('note').textContent='Matahari tidak terbenam pada tanggal dan lokasi ini.';return;}
+  STATE={k:r.k,r:r,loc:loc};
+  const c=criteria(r),tz=loc.tz,z=tzName(tz);
+  let note='';
+  if(r.age<=0) note='Ijtimak terjadi setelah matahari terbenam pada tanggal ini (umur bulan '+f(r.age,1)+' jam), jadi hilal belum mungkin terlihat. Coba tanggal berikutnya.';
+  else if(r.age>80) note='Tanggal ini berjarak '+f(r.age/24,1)+' hari dari ijtimak, sehingga bulan sudah tidak lagi berupa hilal.';
+  $('note').textContent=note;
+
+  setupScene(r,loc);renderSummary(r,c,loc);
+
+  $('elongv').textContent=f(r.elong,2)+'°';
+  if(typeof GL!=='undefined'&&GL.inited){const gd=$('g-date');if(gd&&$('date').value&&gd.value!==$('date').value){gd.value=$('date').value;computeGlobe();}}
+}
+
+function eveningForConj(k,loc){
+  const jc=conjunction(k);
+  let noon=localNoon(jc,loc.tz),r=evening(noon,loc,k);
+  if(r&&r.ts<jc){noon+=1;r=evening(noon,loc,k);}
+  return r?{noon,r}:null;
+}
+// ---- Interaksi ----
+let deb=null;const debUpdate=()=>{clearTimeout(deb);deb=setTimeout(update,150);};
+pre.addEventListener('change',()=>{applyPreset(+pre.value);update();});
+['lat','lon','elev','tz'].forEach(id=>$(id).addEventListener('input',()=>{pre.value=PRESETS.length-1;debUpdate();}));
+$('date').addEventListener('change',update);
+function step(d){
+  const loc=getLoc();if(!loc||STATE.k===null) return;
+  const e=eveningForConj(STATE.k+d,loc);
+  if(e){$('date').value=dateInputValue(e.noon,loc.tz);update();}
+}
+$('prev').addEventListener('click',()=>step(-1));
+$('next').addEventListener('click',()=>step(1));
+$('geo').addEventListener('click',()=>{
+  const m=$('geomsg');
+  if(!navigator.geolocation){m.textContent='Perangkat ini tidak mendukung geolokasi. Isi koordinat secara manual.';return;}
+  m.textContent='Meminta izin lokasi…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $('lat').value=pos.coords.latitude.toFixed(4);$('lon').value=pos.coords.longitude.toFixed(4);
+    $('elev').value=Math.max(0,Math.round(pos.coords.altitude||0));
+    $('tz').value=-new Date().getTimezoneOffset()/60;
+    pre.value=PRESETS.length-1;
+    m.textContent='Lokasi perangkat dipakai. Ketinggian dari GPS bisa tidak akurat; koreksi bila perlu.';
+    update();
+  },()=>{m.textContent='Izin lokasi ditolak atau tidak tersedia. Pilih lokasi dari daftar atau isi koordinat secara manual.';},{timeout:10000});
+});
+$('play').addEventListener('click',()=>{
+  SCN.playing=!SCN.playing;
+  if(SCN.playing&&SCN.traj&&SCN.f>=SCN.traj.length-1){SCN.f=0;SCN.hold=0;}
+  syncPlayBtn();
+});
+$('scrub').addEventListener('input',()=>{
+  if(!SCN.traj) return;
+  SCN.playing=false;SCN.hold=0;
+  SCN.f=$('scrub').value/1000*(SCN.traj.length-1);
+  syncPlayBtn();renderFrame();
+});
+$('speed').addEventListener('change',()=>{SCN.speed=parseFloat($('speed').value)||1;});
+$('jump').addEventListener('click',()=>{
+  if(!SCN.traj) return;
+  SCN.playing=false;SCN.hold=0;
+  SCN.f=clamp((SCN.bestM!==null?SCN.bestM:0)-SCN.m0,0,SCN.traj.length-1);
+  $('scrub').value=Math.round(SCN.f/(SCN.traj.length-1)*1000);
+  syncPlayBtn();renderFrame();
+});
+// ====================== Menu / navigasi ======================
+let VIEW='hilal';
+const VIEWS=['hilal','kalender','lapor','tanya','tentang'];
+function showView(v){
+  if(!VIEWS.includes(v)) v='hilal';
+  VIEW=v;
+  VIEWS.forEach(x=>{const el=$('v-'+x);if(el) el.hidden=(x!==v);});
+  document.querySelectorAll('#navin button').forEach(b=>{
+    const on=b.dataset.view===v;
+    b.setAttribute('aria-current',on?'page':'false');
+    if(on){try{const n=$('navin');n.scrollTo({left:b.offsetLeft-(n.clientWidth-b.offsetWidth)/2,behavior:'smooth'});}catch(e){}}
+  });
+  try{history.replaceState(null,'','#'+v);}catch(e){}
+  try{window.scrollTo(0,0);}catch(e){}
+  if(v!=='tanya'&&typeof voiceStop==='function'){voiceStop();if(typeof VOICE!=='undefined'&&VOICE.rec) try{VOICE.rec.abort();}catch(e){}}
+  if(v==='kalender') initKalender();
+  if(v==='lapor') initLapor();
+  if(v==='tanya') initTanya();
+  if(v==='hilal'){renderFrame();initGlobe();}
+}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ====================== Kalender Hijriah (MABIMS) ======================
+const HM=['Muharam','Safar','Rabiulawal','Rabiulakhir','Jumadilawal','Jumadilakhir','Rajab','Syakban','Ramadan','Syawal','Zulkaidah','Zulhijah'];
+// Jangkar: ijtimak 17 Feb 2026 ~12:01 UT mengawali Ramadan 1447 H
+const KANCHOR=Math.round((Date.UTC(2026,1,17,12,1)/864e5+2440587.5-K0JD)/SYN);
+const H0=1447*12+8;
+const hijriOfK=k=>{const H=H0+(k-KANCHOR);return {y:Math.floor(H/12),m:((H%12)+12)%12};};
+const kOfHijri=(y,m)=>KANCHOR+(y*12+m-H0);
+const INDO=[];
+for(let la=-10;la<=5;la+=3) for(let lo=95;lo<=140;lo+=4) INDO.push({lat:la,lon:lo,elev:0,tz:lo<114?7:lo<131?8:9});
+// ====================== Standar organisasi falakiyah ======================
+// Kriteria mengacu pada informasi publik (Kemenag, LF PBNU, PP Muhammadiyah, Persis) per 2026.
+// Tinggi "mar'ie" = tinggi toposentrik + refraksi. Elongasi = geosentrik.
+const ORGS=[
+ {id:'mabims',group:'org',name:'MABIMS baru (Pemerintah RI / Kemenag)',short:'MABIMS',type:'ir',alt:3,elong:6.4,age:0,altMode:'marie',scope:'indo',
+  line:'Tinggi hilal 3° dan elongasi 6,4° saat matahari terbenam.',
+  desc:'Kriteria Neo-MABIMS yang dipakai Pemerintah RI. Dinilai di wilayah Indonesia: bila ada daerah terluar yang memenuhi, awal bulan jatuh keesokan harinya. Penetapan resmi melalui sidang isbat.'},
+ {id:'muh',group:'org',name:'Muhammadiyah (KHGT)',short:'Muhammadiyah',type:'ir',alt:5,elong:8,age:0,altMode:'topo',scope:'global',
+  line:'Kalender Hijriah Global Tunggal: tinggi 5° dan elongasi 8° di mana pun di dunia.',
+  desc:'Sejak KHGT, awal bulan berlaku serentak di seluruh dunia bila di salah satu tempat di bumi hilal sudah mencapai tinggi 5° dan elongasi 8°. Aplikasi ini menerapkannya secara sederhana (hari UT yang sama); aturan tambahan KHGT tidak seluruhnya dimodelkan.'},
+ {id:'odeh',group:'lain',name:'Odeh (2004)',short:'Odeh',type:'odeh',alt:0,elong:0,age:0,altMode:'topo',scope:'indo',
+  line:'Hilal teramati dengan alat optik bila nilai V ≥ 2.',
+  desc:'Kriteria visibilitas empiris dari Mohammad Odeh berdasarkan ratusan pengamatan. Nilai V ≥ 5,65 berarti terlihat dengan mata telanjang.'},
+ {id:'custom',group:'lain',name:'Kustom',short:'Kustom',type:'ir',alt:3,elong:6.4,age:0,altMode:'marie',scope:'indo',
+  line:'Tentukan sendiri batas tinggi, elongasi, umur, dan wilayah.',
+  desc:'Atur sendiri batas tinggi hilal (mar\'ie), elongasi geosentrik, umur bulan, dan wilayah penilaian.'}
+];
+const ORGKEY='hilalai.standar';
+let ORG=ORGS[0],ORG_SAVED=false;
+const orgById=id=>ORGS.find(o=>o.id===id)||ORGS[0];
+const fnum=v=>String(v).replace('.',',');
+function loadOrg(){
+  try{
+    const j=JSON.parse(localStorage.getItem(ORGKEY)||'null');
+    if(j&&j.id){
+      const c=orgById('custom');
+      if(j.custom){c.alt=+j.custom.alt||3;c.elong=+j.custom.elong||6.4;c.age=+j.custom.age||0;c.scope=j.custom.scope==='global'?'global':'indo';}
+      ORG=orgById(j.id);ORG_SAVED=true;
+    }
+  }catch(e){}
+}
+function saveOrg(){
+  try{const c=orgById('custom');localStorage.setItem(ORGKEY,JSON.stringify({id:ORG.id,custom:{alt:c.alt,elong:c.elong,age:c.age,scope:c.scope}}));ORG_SAVED=true;}catch(e){}
+}
+const orgSig=o=>[o.type,o.alt,o.elong,o.age,o.altMode,o.scope].join('|');
+function orgAlt(o,r){return o.altMode==='marie'?r.altR:r.alt;}
+function orgTest(o,r){
+  if(!r||r.age<=0) return false;
+  if(o.type==='wh') return r.alt>0;
+  if(o.type==='odeh') return criteria(r).V>=2;
+  return orgAlt(o,r)>=o.alt&&r.elongG>=o.elong&&(!o.age||r.age>=o.age);
+}
+function orgNear(o,r){
+  if(o.type!=='ir'||!r||r.age<=0) return false;
+  return orgAlt(o,r)>=o.alt*0.85&&r.elongG>=o.elong*0.85&&(!o.age||r.age>=o.age*0.85);
+}
+function orgThreshold(o){
+  if(o.type==='wh') return 'Ijtimak sebelum magrib dan pusat bulan di atas ufuk';
+  if(o.type==='odeh') return 'Nilai V ≥ 2 (hilal teramati dengan alat optik)';
+  return 'Tinggi ≥ '+fnum(o.alt)+'°, elongasi ≥ '+fnum(o.elong)+'°'+(o.age?', umur ≥ '+fnum(o.age)+' jam':'');
+}
+function orgValues(o,r){
+  if(o.type==='wh') return 'tinggi '+f(r.alt,2)+'°';
+  if(o.type==='odeh') return 'V = '+f(criteria(r).V,2);
+  return (o.altMode==='marie'?"tinggi mar'ie ":'tinggi ')+f(orgAlt(o,r),2)+'°, elongasi '+f(r.elongG,2)+'°'+(o.age?', umur '+f(r.age,1)+' jam':'');
+}
+function orgRow(r){
+  const ok=orgTest(ORG,r);
+  return '<tr><td><b>'+esc(ORG.short)+'</b> <small>standar pilihan Anda</small></td><td>'+orgThreshold(ORG)+'</td><td>'+orgValues(ORG,r)+'</td><td>'+(ok?tag('ok','Terpenuhi'):tag('no','Belum terpenuhi'))+'</td></tr>';
+}
+// ---- lokasi kota (untuk globe dan ringkasan) ----
+const CITIES=[
+ ['Banda Aceh',5.5483,95.3238,7,'id'],['Sabang',5.8933,95.3167,7,'id'],['Medan',3.5952,98.6722,7,'id'],['Padang',-0.9471,100.4172,7,'id'],['Palembang',-2.9761,104.7754,7,'id'],
+ ['Jakarta',-6.2088,106.8456,7,'id'],['Bandung',-6.9175,107.6191,7,'id'],['Semarang',-6.9667,110.4167,7,'id'],['Yogyakarta',-7.7956,110.3695,7,'id'],['Surabaya',-7.2575,112.7521,7,'id'],
+ ['Pontianak',-0.0263,109.3425,7,'id'],['Denpasar',-8.65,115.2167,8,'id'],['Banjarmasin',-3.3194,114.5908,8,'id'],['Balikpapan',-1.2379,116.8529,8,'id'],['Makassar',-5.1477,119.4327,8,'id'],
+ ['Manado',1.4748,124.8421,8,'id'],['Kupang',-10.1772,123.607,8,'id'],['Ambon',-3.6954,128.1814,9,'id'],['Jayapura',-2.5337,140.7181,9,'id'],['Merauke',-8.4667,140.3333,9,'id'],
+ ['Kuala Lumpur',3.139,101.6869,8,'dn'],['Singapura',1.3521,103.8198,8,'dn'],['Bandar Seri Begawan',4.9031,114.9398,8,'dn'],['Mekkah',21.4225,39.8262,3,'dn'],['Kairo',30.0444,31.2357,2,'dn'],
+ ['Istanbul',41.0082,28.9784,3,'dn'],['London',51.5074,-0.1278,0,'dn'],['Rabat',34.0209,-6.8416,1,'dn'],['Dakar',14.7167,-17.4677,0,'dn'],['New York',40.7128,-74.006,-5,'dn'],
+ ['Sao Paulo',-23.5505,-46.6333,-3,'dn'],['Los Angeles',34.0522,-118.2437,-8,'dn'],['Sydney',-33.8688,151.2093,10,'dn'],['Tokyo',35.6762,139.6503,9,'dn']
+];
+function nearestCity(lat,lon){
+  let b=null,bd=1e9;
+  for(const c of CITIES){const d=(c[1]-lat)**2+((c[2]-lon)*Math.cos(rad(lat)))**2;if(d<bd){bd=d;b=c;}}
+  return b?b[0]:'';
+}
+
+// ---- lingkup perhitungan: Indonesia, dunia, atau satu lokasi ----
+const JKT={lat:-6.2088,lon:106.8456,elev:8,tz:7};
+let _gp=null;
+// Titik global: hanya daratan (grid 5°), karena hilal tidak dapat teramati dari tengah samudra.
+function globalPoints(){
+  if(_gp) return _gp;
+  _gp=[];
+  for(let la=-55;la<=55;la+=5) for(let lo=-180;lo<180;lo+=5){ if(isLand(lo,la)) _gp.push({lat:la,lon:lo,elev:0,tz:0}); }
+  return _gp;
+}
+const SCOPES={
+  indo:{key:'indo',name:'Seluruh Indonesia',tz:7,points:INDO,rep:JKT,dayJD:(jc,o)=>localNoon(jc,7)+o,noonFor:(d,p)=>d+(7-p.tz)/24,startJD:d=>d+1,dayOfStartDate:s=>s},
+  global:{key:'global',name:'Seluruh dunia (daratan)',tz:7,get points(){return globalPoints();},rep:JKT,dayJD:(jc,o)=>Math.floor(jc+0.5)-0.5+o,noonFor:(d,p)=>d+0.5-p.lon/360,startJD:d=>d+1+0.5-7/24,dayOfStartDate:s=>s-0.5+7/24}
+};
+function locScope(l,name){
+  return {key:'loc:'+l.lat+','+l.lon+','+l.tz,name,tz:l.tz,points:[l],rep:l,dayJD:(jc,o)=>localNoon(jc,l.tz)+o,noonFor:d=>d,startJD:d=>d+1,dayOfStartDate:s=>s};
+}
+function scopeFor(refKey,o){
+  if(o.scope==='global'&&(refKey==='auto'||refKey==='global')) return SCOPES.global;
+  if(refKey==='auto') return SCOPES.indo;
+  if(refKey==='indo') return SCOPES.indo;
+  if(refKey==='global') return SCOPES.global;
+  if(refKey==='home'){const l=getLoc();return l?locScope(l,'Lokasi di tab Pengamatan'):null;}
+  const p=PRESETS[+refKey];
+  return p&&p[1]!==null?locScope({lat:p[1],lon:p[2],elev:p[3],tz:p[4]},p[0]):null;
+}
+const EVC={},CONJ={};
+const conjOf=k=>CONJ[k]||(CONJ[k]=conjunction(k));
+function listAt(k,off,scope){
+  const key=scope.key+'|'+k+'|'+off;
+  if(EVC[key]) return EVC[key];
+  const jc=conjOf(k),day=scope.dayJD(jc,off),list=[];
+  for(const p of scope.points){const r=evening(scope.noonFor(day,p),p,k,jc,true);if(r) list.push({r,loc:p});}
+  return EVC[key]={day,list};
+}
+function monthOf(k,scope,org){
+  const key='M|'+scope.key+'|'+orgSig(org)+'|'+k;
+  if(EVC[key]) return EVC[key];
+  const jc=conjOf(k);
+  let off=0,found=false;
+  for(;off<=2;off++){if(listAt(k,off,scope).list.some(x=>orgTest(org,x.r))){found=true;break;}}
+  if(!found) off=3;
+  const day=scope.dayJD(jc,off);
+  return EVC[key]={k,jc,off,day,start:scope.startJD(day),ok:found};
+}
+// cek lingkup untuk satu tanggal (dipakai tab Pengamatan)
+function scopeCheck(o,r,dateStr){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr||'');if(!m) return null;
+  const sc=scopeFor('auto',o);
+  const dayDate=sc.key==='global'?Date.UTC(+m[1],+m[2]-1,+m[3])/864e5+2440587.5:(Date.UTC(+m[1],+m[2]-1,+m[3],12)-7*36e5)/864e5+2440587.5;
+  const off=Math.round(dayDate-sc.dayJD(r.jc,0));
+  const L=listAt(r.k,off,sc);
+  let n=0,best=null;
+  for(const x of L.list){
+    if(orgTest(o,x.r)) n++;
+    if(x.r.age>0&&(!best||x.r.altR>best.r.altR)) best=x;
+  }
+  return {sc,n,total:L.list.length,best};
+}
+
+// ---- pemilih standar ----
+const OP={sel:'mabims',after:null,cancelable:false};
+function renderPicker(){
+  const groups=[['org','Standar utama'],['lain','Kriteria lain']];
+  let h='';
+  groups.forEach(g=>{
+    h+='<h3 class="op-gt">'+g[1]+'</h3><div class="op-grid">';
+    ORGS.filter(o=>o.group===g[0]).forEach(o=>{
+      h+='<button type="button" class="op-card'+(o.id===OP.sel?' on':'')+'" data-id="'+o.id+'" aria-pressed="'+(o.id===OP.sel)+'"><b>'+o.name+'</b><span>'+o.line+'</span><em>'+(o.scope==='global'?'Wilayah: seluruh dunia':'Wilayah: Indonesia')+'</em></button>';
+    });
+    h+='</div>';
+  });
+  $('op-list').innerHTML=h;
+  $('op-list').querySelectorAll('.op-card').forEach(b=>b.addEventListener('click',()=>{OP.sel=b.dataset.id;renderPicker();}));
+  const o=orgById(OP.sel),c=orgById('custom');
+  $('op-custom').hidden=OP.sel!=='custom';
+  $('op-alt').value=c.alt;$('op-elong').value=c.elong;$('op-age').value=c.age;$('op-scope').value=c.scope;
+  $('op-desc').textContent=o.desc;
+}
+function openPicker(fromHeader,after){
+  OP.sel=ORG.id;OP.after=after||null;OP.cancelable=!!fromHeader;
+  $('op-cancel').hidden=!fromHeader;
+  renderPicker();
+  $('orgpick').hidden=false;
+}
+function confirmPicker(){
+  if(OP.sel==='custom'){
+    const c=orgById('custom');
+    const a=parseFloat($('op-alt').value),e=parseFloat($('op-elong').value),g=parseFloat($('op-age').value);
+    c.alt=Number.isFinite(a)?Math.max(0,a):3;c.elong=Number.isFinite(e)?Math.max(0,e):6.4;c.age=Number.isFinite(g)?Math.max(0,g):0;
+    c.scope=$('op-scope').value==='global'?'global':'indo';
+  }
+  const changed=ORG.id!==OP.sel||OP.sel==='custom';
+  ORG=orgById(OP.sel);saveOrg();
+  $('orgpick').hidden=true;
+  onOrgChange(changed);
+  const cb=OP.after;OP.after=null;
+  if(cb) cb();
+}
+function onOrgChange(changed){
+  $('orgbtn').textContent='Standar: '+ORG.short;
+  if(typeof KAL!=='undefined'){KAL.data=null;KAL.sel=null;if(VIEW==='kalender'&&KAL.inited) computeKal();}
+  try{update();}catch(e){}
+  if(typeof GL!=='undefined'){GL.orgId=ORG.id;if(GL.inited){syncGlobeOrg();if(GL.cells){scoreCells();summarizeGlobe();}GL.dirty=true;}}
+}
+function bindPicker(){
+  $('op-ok').addEventListener('click',confirmPicker);
+  $('op-cancel').addEventListener('click',()=>{$('orgpick').hidden=true;OP.after=null;});
+  $('orgbtn').addEventListener('click',()=>openPicker(true,null));
+  $('k-org').addEventListener('click',()=>openPicker(true,null));
+}
+
+const dayNum=(jd,tz)=>Math.floor(jd+tz/24+0.5);
+
+// ====================== Kalender Hijriah (berbasis standar) ======================
+const EVENTS=[[0,1,'Tahun Baru Hijriah','Tahun Baru'],[0,10,'Hari Asyura','Asyura'],[2,12,'Maulid Nabi Muhammad SAW','Maulid Nabi'],[6,27,'Isra Mikraj','Isra Mikraj'],[7,15,'Nisfu Syakban','Nisfu Syakban'],[8,1,'Awal Ramadan','Awal Ramadan'],[8,17,'Nuzulul Quran','Nuzulul Quran'],[9,1,'Hari Raya Idulfitri','Idulfitri'],[11,9,'Hari Arafah','Arafah'],[11,10,'Hari Raya Iduladha','Iduladha']];
+const KAL={inited:false,year:1448,ref:'auto',sel:null,cache:{},data:null,scope:null,token:0,today:null};
+const nowJD=()=>Date.now()/864e5+2440587.5;
+function yearData(Y,scope,org){
+  const ck=Y+'|'+scope.key+'|'+orgSig(org);
+  if(KAL.cache[ck]) return KAL.cache[ck];
+  const D=[monthOf(kOfHijri(Y-1,11),scope,org)];
+  for(let m=0;m<=12;m++) D.push(monthOf(m===12?kOfHijri(Y+1,0):kOfHijri(Y,m),scope,org));
+  KAL.cache[ck]=D;return D;
+}
+function eventsOf(D,Y){return EVENTS.map(e=>({m:e[0],d:e[1],name:e[2],short:e[3],y:Y,jd:D[e[0]+1].start+e[1]-1}));}
+function hijriToday(scope,org){
+  const jd=nowJD(),today=localNoon(jd,scope.tz);
+  const Y=clamp(hijriOfK(Math.floor((jd-K0JD)/SYN)).y,1446,1455);
+  const D=yearData(Y,scope,org);
+  for(let i=0;i<=12;i++){
+    if(today>=D[i].start-1e-6&&today<D[i+1].start-1e-6){
+      const mi=i-1;
+      let after=false;
+      try{const ss=findSunset(localNoon(jd,scope.rep.tz),scope.rep.lat,scope.rep.lon,scope.rep.elev);after=!!ss&&jd>ss.jd;}catch(e){}
+      return {Y,D,today,y:mi<0?Y-1:Y,m:mi<0?11:mi,d:Math.round(today-D[i].start)+1,after,len:Math.round(D[i+1].start-D[i].start)};
+    }
+  }
+  return null;
+}
+function nextEvent(scope,org,ht){
+  const list=eventsOf(ht.D,ht.Y).filter(e=>e.jd>=ht.today-0.5).sort((a,b)=>a.jd-b.jd);
+  if(list.length) return list[0];
+  if(ht.Y<1455) return eventsOf(yearData(ht.Y+1,scope,org),ht.Y+1).sort((a,b)=>a.jd-b.jd)[0];
+  return null;
+}
+function renderHero(scope){
+  const box=$('k-hero'),ht=hijriToday(scope,ORG);
+  if(!ht){box.innerHTML='<div class="kh-now"><span class="kh-lab">Hari ini</span><b class="kh-h">–</b></div>';KAL.today=null;return;}
+  KAL.today=ht;
+  const tz=scope.tz;
+  let extra='';
+  if(ht.after){
+    let d2=ht.d+1,m2=ht.m,y2=ht.y;
+    if(d2>ht.len){d2=1;m2++;if(m2>11){m2=0;y2++;}}
+    extra='<small>Sejak magrib: '+d2+' '+HM[m2]+' '+y2+' H</small>';
+  }
+  const ev=nextEvent(scope,ORG,ht);
+  let nx='<b class="kh-n">–</b>';
+  if(ev){
+    const dd=Math.round(ev.jd-ht.today);
+    nx='<b class="kh-n">'+ev.name+'</b><span>'+ev.d+' '+HM[ev.m]+' '+ev.y+' H</span><span>'+fmtDay(ev.jd,tz)+'</span><em>'+(dd===0?'Hari ini':dd+' hari lagi')+'</em>';
+  }
+  box.innerHTML='<div class="kh-now"><span class="kh-lab">Hari ini · standar '+esc(ORG.short)+'</span><b class="kh-h">'+ht.d+' '+HM[ht.m]+' '+ht.y+' H</b><span class="kh-g">'+fmtDay(ht.today,tz)+'</span>'+extra+'</div>'+
+    '<div class="kh-next"><span class="kh-lab">Hari besar berikutnya</span>'+nx+'</div>';
+}
+function initKalender(){
+  if(!KAL.inited){
+    KAL.inited=true;
+    const ys=$('k-year'),rs=$('k-ref');
+    for(let y=1446;y<=1455;y++){const o=document.createElement('option');o.value=y;o.textContent=y+' H';ys.appendChild(o);}
+    KAL.year=clamp(hijriOfK(Math.floor((nowJD()-K0JD)/SYN)).y,1446,1455);ys.value=KAL.year;
+    [['auto','Sesuai standar pilihan'],['indo','Seluruh Indonesia'],['global','Seluruh dunia'],['home','Lokasi di tab Pengamatan']].forEach(a=>{const o=document.createElement('option');o.value=a[0];o.textContent=a[1];rs.appendChild(o);});
+    PRESETS.forEach((p,i)=>{if(p[1]!==null){const o=document.createElement('option');o.value=i;o.textContent=p[0];rs.appendChild(o);}});
+    rs.value=KAL.ref;
+    ys.addEventListener('change',()=>{KAL.year=+ys.value;KAL.sel=null;computeKal();});
+    rs.addEventListener('change',()=>{KAL.ref=rs.value;computeKal();});
+    $('k-prev').addEventListener('click',()=>kalMove(-1));
+    $('k-next').addEventListener('click',()=>kalMove(1));
+    $('k-today').addEventListener('click',()=>{
+      if(!KAL.today) return;
+      KAL.year=KAL.today.y;$('k-year').value=KAL.year;KAL.sel=KAL.today.m;computeKal();
+    });
+  }
+  if(!KAL.data) computeKal();
+}
+function kalMove(d){
+  if(KAL.sel===null||!KAL.data) return;
+  let y=KAL.year,m=KAL.sel+d;
+  if(m<0){y--;m=11;}else if(m>11){y++;m=0;}
+  if(y<1446||y>1455) return;
+  if(y!==KAL.year){KAL.year=y;$('k-year').value=y;KAL.sel=m;computeKal();}
+  else{KAL.sel=m;renderKal();}
+}
+function computeKal(){
+  const scope=scopeFor(KAL.ref,ORG);
+  if(!scope){$('k-hint').textContent='Lokasi di tab Pengamatan belum valid. Pilih wilayah acuan lain.';return;}
+  const token=++KAL.token;
+  $('k-hint').textContent='Menghitung kalender…';
+  $('k-org').textContent='Standar: '+ORG.short;
+  setTimeout(()=>{
+    if(token!==KAL.token) return;
+    KAL.scope=scope;KAL.data=yearData(KAL.year,scope,ORG);
+    renderHero(scope);
+    if(KAL.sel===null) KAL.sel=(KAL.today&&KAL.today.y===KAL.year)?KAL.today.m:8;
+    $('k-hint').textContent='Standar: '+ORG.name+' ('+orgThreshold(ORG)+'). Wilayah acuan: '+scope.name+'.'+(scope.points.length>1?' Kriteria dianggap terpenuhi bila ada titik di wilayah ini yang memenuhinya.':'');
+    renderKal();
+  },30);
+}
+function renderKal(){
+  const D=KAL.data,scope=KAL.scope,tz=scope.tz,Y=KAL.year;
+  if(!D) return;
+  const m=KAL.sel,a=D[m+1],len=Math.round(D[m+2].start-a.start),plen=Math.round(a.start-D[m].start);
+  const todayJD=KAL.today?KAL.today.today:localNoon(nowJD(),tz);
+  $('k-mtitle').textContent=HM[m]+' '+Y+' H';
+  $('k-msub').textContent='Mulai '+fmtDay(a.start,tz)+' · '+len+' hari';
+  $('k-mnote').textContent=plen===29?'Awal bulan ini ditetapkan pada sore hari ke-29 bulan sebelumnya, karena standar '+ORG.short+' sudah terpenuhi.':plen===30?'Bulan sebelumnya digenapkan 30 hari (istikmal) karena standar '+ORG.short+' belum terpenuhi pada hari ke-29.':'Panjang bulan sebelumnya '+plen+' hari. Mohon ditinjau.';
+  const evs=eventsOf(D,Y).filter(e=>e.m===m),evMap={};
+  evs.forEach(e=>{evMap[e.d]=e;});
+  const wd=parts(a.start,tz).wd;
+  let h='<div class="mgrid">';
+  ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(x=>{h+='<div class="mh">'+x+'</div>';});
+  for(let i=0;i<wd;i++) h+='<div></div>';
+  for(let d=0;d<len;d++){
+    const g=parts(a.start+d,tz),ev=evMap[d+1],isToday=Math.round(a.start+d-todayJD)===0;
+    h+='<div class="mc'+(isToday?' today':'')+(g.wd===5?' fri':'')+(ev?' sp':'')+'"><b>'+(d+1)+'</b><span>'+g.d+' '+BULAN[g.m]+'</span>'+(ev?'<em>'+ev.short+'</em>':'')+'</div>';
+  }
+  $('k-grid').innerHTML=h+'</div>';
+  $('k-mevents').innerHTML=evs.length?evs.map(e=>'<li><b>'+e.name+'</b>: '+e.d+' '+HM[e.m]+' '+Y+' H, '+fmtDay(e.jd,tz)+'</li>').join(''):'<li style="list-style:none;margin-left:-20px;color:var(--muted)">Tidak ada hari besar pada bulan ini.</li>';
+  // perbandingan antar standar untuk bulan terpilih
+  renderCompare(D,m,scope);
+  // kartu hari besar setahun
+  const all=eventsOf(D,Y).sort((x,y)=>x.jd-y.jd);
+  let firstUp=true;
+  $('k-evsub').textContent='Hari besar tahun '+Y+' H menurut standar '+ORG.short+'. Hari libur resmi ditetapkan Pemerintah.';
+  $('k-events').innerHTML=all.map(e=>{
+    const dd=Math.round(e.jd-todayJD),up=dd>=0&&firstUp;if(dd>=0) firstUp=false;
+    const g=parts(e.jd,tz);
+    return '<div class="evc'+(up?' up':'')+(dd<0?' past':'')+'"><div class="evd"><b>'+g.d+'</b><span>'+BULAN[g.m]+'</span></div>'+
+      '<div class="evt"><b>'+e.name+'</b><span>'+e.d+' '+HM[e.m]+' '+Y+' H · '+HARI[g.wd]+'</span><em>'+(dd===0?'Hari ini':dd>0?dd+' hari lagi':Math.abs(dd)+' hari lalu')+'</em></div></div>';
+  }).join('');
+  // rincian hisab
+  $('k-thorg').textContent='Penetapan '+ORG.short;
+  let rows='';
+  for(let i=0;i<12;i++){
+    const b=D[i+1],prevStart=D[i].start,ln=Math.round(D[i+2].start-b.start),pl=Math.round(b.start-prevStart);
+    const dayE=scope.dayOfStartDate(prevStart)+28,offE=Math.round(dayE-scope.dayJD(b.jc,0));
+    let r=null,best=null;
+    if(offE>=0&&offE<=2){
+      for(const x of listAt(b.k,offE,scope).list){if(x.r.age>0&&(!best||x.r.altR>best.r.altR)) best=x;}
+      r=best?best.r:null;
+    }
+    if(r&&r.age>0&&r.lag===null) r.lag=findMoonset(r.ts,best.loc.lat,best.loc.lon);
+    const obs=offE<0?'sebelum ijtimak':r?(r.age>0?f(orgAlt(ORG,r),1)+'° / '+f(r.elongG,1)+'°':'ijtimak setelah magrib'):'ijtimak setelah magrib';
+    const status=pl===29?tag('ok','Memenuhi pada hari ke-29'):pl===30?tag('mid','Istikmal 30 hari')+'<small>belum memenuhi pada hari ke-29</small>':tag('no','Perlu ditinjau')+'<small>bulan sebelumnya '+pl+' hari</small>';
+    rows+='<tr class="rowbtn'+(KAL.sel===i?' active':'')+'"><td><button type="button" data-m="'+i+'">'+HM[i]+' '+Y+'</button></td><td>'+fmtDay(b.start,tz)+'</td><td class="num">'+ln+' hari</td><td>'+obs+'<small>sore '+fmtDate(prevStart+28,tz)+(best?' · titik terbaik dekat '+esc(nearestCity(best.loc.lat,best.loc.lon)):'')+'</small></td><td>'+status+'</td></tr>';
+  }
+  $('k-body').innerHTML=rows;
+  $('k-body').querySelectorAll('button[data-m]').forEach(bt=>bt.addEventListener('click',()=>{KAL.sel=+bt.dataset.m;renderKal();}));
+}
+function renderCompare(D,m,scope){
+  const a=D[m+1],mine=dayNum(a.start,scope.tz);
+  const groups=[];
+  ORGS.forEach(o=>{
+    if(o.id==='custom'&&ORG.id!=='custom') return;
+    const sig=orgSig(o);let g=groups.find(x=>x.sig===sig);
+    if(!g){g={sig,orgs:[],o};groups.push(g);}
+    g.orgs.push(o);
+  });
+  $('k-cmpsub').textContent='Awal '+HM[m]+' '+KAL.year+' H menurut tiap standar, dibandingkan dengan standar pilihan Anda ('+ORG.short+').';
+  $('k-cmp').innerHTML=groups.map(g=>{
+    const sc=scopeFor(KAL.ref==='auto'?'auto':KAL.ref,g.o)||scope;
+    const mo=monthOf(a.k,sc,g.o),dn=dayNum(mo.start,sc.tz),diff=dn-mine;
+    const isMine=g.orgs.some(x=>x.id===ORG.id);
+    const names=g.orgs.map(x=>x.short).join(' / ');
+    const note='';
+    return '<tr'+(isMine?' class="active"':'')+'><td><b>'+esc(names)+'</b>'+(note?'<small>'+note+'</small>':'')+'<small>'+orgThreshold(g.o)+' · '+(sc.key==='global'?'dunia':sc.key==='indo'?'Indonesia':'satu lokasi')+'</small></td><td>'+fmtDay(mo.start,sc.tz)+'</td><td>'+(diff===0?tag('ok','sama'):tag('mid',(diff>0?'+':'−')+Math.abs(diff)+' hari'))+'</td></tr>';
+  }).join('');
+}
+
+
+// ====================== Laporan rukyat ======================
+const LS_KEY='hilalai.laporan.v1';
+let REP=[];
+const LP={inited:false,cur:null};
+const ALAT={mata:'Mata telanjang',teropong:'Teropong',teleskop:'Teleskop',teleskop_ccd:'Teleskop + kamera'};
+const LANGIT={cerah:'Cerah',berawan_tipis:'Berawan tipis',berawan_sebagian:'Berawan sebagian',mendung:'Mendung',hujan:'Hujan',kabut:'Kabut atau asap'};
+function loadRep(){try{const j=localStorage.getItem(LS_KEY);REP=j?JSON.parse(j):[];if(!Array.isArray(REP)) REP=[];}catch(e){REP=[];}}
+function saveRep(){try{localStorage.setItem(LS_KEY,JSON.stringify(REP));return true;}catch(e){return false;}}
+let _dl=null;
+function getDL(){
+  if(_dl) return _dl;
+  try{_dl=(window.claude&&typeof window.claude.use==='function')?Promise.resolve(window.claude.use('downloads')).catch(()=>null):Promise.resolve(null);}catch(e){_dl=Promise.resolve(null);}
+  return _dl;
+}
+function copyFromHome(){
+  ['lat','lon','elev','tz'].forEach(id=>{$('r-'+id).value=$(id).value;});
+  $('r-preset').value=$('preset').value;
+  if($('date').value) $('r-date').value=$('date').value;
+}
+function readRLoc(){
+  const lat=parseFloat($('r-lat').value),lon=parseFloat($('r-lon').value),elev=parseFloat($('r-elev').value)||0,tz=parseFloat($('r-tz').value);
+  if(![lat,lon,tz].every(Number.isFinite)||Math.abs(lat)>66||Math.abs(lon)>180) return null;
+  return {lat,lon,elev,tz};
+}
+let rhT=null;const debRh=()=>{clearTimeout(rhT);rhT=setTimeout(refreshHisab,200);};
+function initLapor(){
+  if(!LP.inited){
+    LP.inited=true;loadRep();
+    const ps=$('r-preset');
+    PRESETS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];ps.appendChild(o);});
+    copyFromHome();
+    ps.addEventListener('change',()=>{const p=PRESETS[+ps.value];if(p[1]!==null){$('r-lat').value=p[1];$('r-lon').value=p[2];$('r-elev').value=p[3];$('r-tz').value=p[4];}refreshHisab();});
+    ['r-lat','r-lon','r-elev','r-tz'].forEach(id=>$(id).addEventListener('input',()=>{ps.value=PRESETS.length-1;debRh();}));
+    $('r-date').addEventListener('input',debRh);
+    $('r-awan').addEventListener('input',()=>{$('r-awanv').textContent=$('r-awan').value+'%';});
+    $('r-home').addEventListener('click',()=>{copyFromHome();refreshHisab();});
+    $('r-geo').addEventListener('click',()=>{
+      const m=$('r-msg');m.className='msg';
+      if(!navigator.geolocation){m.textContent='Perangkat ini tidak mendukung geolokasi. Isi koordinat secara manual.';return;}
+      m.textContent='Meminta izin lokasi…';
+      navigator.geolocation.getCurrentPosition(pos=>{
+        $('r-lat').value=pos.coords.latitude.toFixed(4);$('r-lon').value=pos.coords.longitude.toFixed(4);
+        $('r-elev').value=Math.max(0,Math.round(pos.coords.altitude||0));$('r-tz').value=-new Date().getTimezoneOffset()/60;
+        ps.value=PRESETS.length-1;m.textContent='Lokasi perangkat dipakai.';refreshHisab();
+      },()=>{m.textContent='Izin lokasi ditolak atau tidak tersedia. Pilih lokasi cepat atau isi koordinat manual.';},{timeout:10000});
+    });
+    $('r-save').addEventListener('click',saveReport);
+    $('r-reset').addEventListener('click',resetReport);
+    $('r-dl').addEventListener('click',downloadReports);
+    $('r-clear').addEventListener('click',clearReports);
+    $('r-list').addEventListener('click',ev=>{
+      const b=ev.target.closest('button[data-del]');if(!b) return;
+      REP=REP.filter(x=>x.id!==b.dataset.del);saveRep();renderReports();
+    });
+    getDL().then(dl=>{$('r-dl').hidden=!dl;});
+  }
+  refreshHisab();renderReports();
+}
+function refreshHisab(){
+  const box=$('r-hisab'),loc=readRLoc(),noon=loc?noonFromInput($('r-date').value,loc.tz):null;
+  LP.cur=null;
+  if(!loc||noon===null){box.innerHTML='<p class="hint" style="margin:0">Lengkapi koordinat, zona waktu, dan tanggal untuk melihat data hisab.</p>';return;}
+  const r=evening(noon,loc,null);
+  if(!r){box.innerHTML='<p class="hint" style="margin:0">Matahari tidak terbenam pada tanggal dan lokasi ini.</p>';return;}
+  const c=criteria(r),tz=loc.tz,z=tzName(tz);
+  LP.cur={r,loc,c};
+  const rows=[
+    ['Ijtimak',fmtDate(r.jc,tz)+', '+fmtTime(r.jc,tz,false)+' '+z],
+    ['Matahari terbenam',fmtTime(r.ts,tz,false)+' '+z],
+    ['Bulan terbenam',r.lag===null?'–':fmtTime(r.ts+r.lag/1440,tz,false)+' '+z],
+    ['Umur bulan',f(r.age,1)+' jam'],
+    ['Tinggi hilal',f(r.alt,2)+'°'],
+    ['Elongasi',f(r.elong,2)+'°'],
+    ['Beda azimuth',f(r.daz,2)+'°'],
+    ['Lebar sabit',f(r.w,2)+'′'],
+    ['Kriteria MABIMS',c.mabims?'Terpenuhi':'Belum terpenuhi']
+  ];
+  box.innerHTML='<dl class="kv">'+rows.map(x=>'<dt>'+x[0]+'</dt><dd>'+x[1]+'</dd>').join('')+'</dl>'+(r.age<=0?'<p class="hint" style="margin-top:12px">Ijtimak terjadi setelah matahari terbenam pada tanggal ini, jadi hilal belum ada.</p>':'');
+}
+function saveReport(){
+  const msg=$('r-msg');msg.className='msg';
+  const nama=$('r-nama').value.trim(),tempat=$('r-tempat').value.trim(),date=$('r-date').value,loc=readRLoc();
+  const chk=document.querySelector('input[name="r-hasil"]:checked'),hasil=chk?chk.value:null;
+  const err=[];
+  if(!nama) err.push('nama pengamat');
+  if(!tempat) err.push('nama tempat');
+  if(!loc) err.push('koordinat dan zona waktu yang valid');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) err.push('tanggal');
+  if(!hasil) err.push('hasil pengamatan');
+  if(err.length){msg.textContent='Lengkapi: '+err.join(', ')+'.';msg.classList.add('bad');return;}
+  refreshHisab();
+  const cur=LP.cur,r=cur?cur.r:null;
+  const rec={
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),dibuat:new Date().toISOString(),
+    nama,inst:$('r-inst').value.trim(),tempat,lat:loc.lat,lon:loc.lon,elev:loc.elev,tz:loc.tz,tanggal:date,
+    alat:$('r-alat').value,langit:$('r-langit').value,awan:+$('r-awan').value,hasil,
+    tLihat:hasil==='ya'?$('r-tlihat').value:'',saksi:parseInt($('r-saksi').value,10)||1,cat:$('r-cat').value.trim(),
+    hisab:r?{alt:r.alt,elong:r.elong,daz:r.daz,w:r.w,lag:r.lag,age:r.age,arcv:r.arcv,illum:r.illum}:null
+  };
+  REP.unshift(rec);
+  const ok=saveRep();
+  renderReports();
+  msg.textContent=ok?'Laporan tersimpan di perangkat ini.':'Laporan ditambahkan, tetapi penyimpanan peramban tidak tersedia. Ekspor CSV agar tidak hilang.';
+  msg.classList.add(ok?'good':'bad');
+  resetReport(true);
+}
+function resetReport(keepMsg){
+  document.querySelectorAll('input[name="r-hasil"]').forEach(x=>{x.checked=false;});
+  $('r-tlihat').value='';$('r-cat').value='';$('r-saksi').value='1';
+  if(keepMsg!==true){$('r-msg').textContent='';$('r-msg').className='msg';}
+}
+function renderReports(){
+  const n=REP.length,ya=REP.filter(x=>x.hasil==='ya').length,tidak=REP.filter(x=>x.hasil==='tidak').length,ragu=n-ya-tidak;
+  let txt=n+' laporan: '+ya+' terlihat, '+tidak+' tidak terlihat, '+ragu+' ragu-ragu.';
+  $('r-count').textContent=n?txt:'Laporan yang Anda simpan akan muncul di sini.';
+  $('r-empty').hidden=n>0;
+  $('r-list').innerHTML=REP.map(x=>{
+    const h=x.hisab;
+    const t=x.hasil==='ya'?tag('ok','Terlihat'):x.hasil==='tidak'?tag('no','Tidak terlihat'):tag('mid','Ragu-ragu');
+    return '<tr><td>'+esc(x.tanggal)+'</td><td>'+esc(x.tempat)+'<small>'+esc(x.nama)+(x.inst?' · '+esc(x.inst):'')+'</small></td><td>'+t+'<small>'+esc(LANGIT[x.langit]||'')+', awan '+esc(x.awan)+'%</small></td><td>'+esc(ALAT[x.alat]||x.alat)+'</td>'+
+      '<td class="num">'+(h?f(h.alt,1)+'° / '+f(h.elong,1)+'°':'–')+'</td><td><button type="button" data-del="'+esc(x.id)+'">Hapus</button></td></tr>';
+  }).join('');
+  $('r-csv').value=reportsCSV();
+}
+function reportsCSV(){
+  const head='tinggi,elongasi,daz,lebar,lag,umur,terlihat,tanggal,tempat,lintang,bujur,alat,langit,awan_persen,pengamat,saksi,waktu_terlihat,catatan';
+  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""').replace(/[\r\n]+/g,' ')+'"';
+  const num=v=>typeof v==='number'?+v.toFixed(4):(v===null||v===undefined?'':v);
+  return head+'\n'+REP.map(x=>{
+    const h=x.hisab||{},y=x.hasil==='ya'?1:x.hasil==='tidak'?0:'ragu';
+    return [num(h.alt),num(h.elong),num(h.daz),num(h.w),num(h.lag),num(h.age),y,x.tanggal,q(x.tempat),num(x.lat),num(x.lon),x.alat,x.langit,x.awan,q(x.nama),x.saksi,x.tLihat||'',q(x.cat)].join(',');
+  }).join('\n');
+}
+async function downloadReports(){
+  const msg=$('r-msg');msg.className='msg';
+  if(!REP.length){msg.textContent='Belum ada laporan untuk diekspor.';return;}
+  const dl=await getDL();
+  if(!dl){msg.textContent='Fitur unduh tidak tersedia di tampilan ini. Salin teks CSV di bawah.';return;}
+  try{await dl.save({filename:'laporan-rukyat-hilalapp.csv',data:reportsCSV()});msg.textContent='Berkas CSV siap disimpan.';msg.classList.add('good');}
+  catch(e){msg.textContent=e&&e.code==='declined'?'Penyimpanan dibatalkan.':'Berkas tidak dapat disimpan ('+((e&&e.code)||'galat')+').';msg.classList.add('bad');}
+}
+let clrT=null;
+function clearReports(){
+  const b=$('r-clear');
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Yakin? Klik sekali lagi';clrT=setTimeout(()=>{b.dataset.armed='0';b.textContent='Hapus semua';},4000);return;}
+  clearTimeout(clrT);b.dataset.armed='0';b.textContent='Hapus semua';
+  REP=[];saveRep();renderReports();
+}
+
+// ---- Data daratan untuk globe (poligon kasar, bujur/lintang) ----
+const LAND=[
+// Amerika Utara
+[[-168,66],[-163,69],[-156,71],[-141,69.7],[-125,70],[-112,68],[-95,68],[-94,72],[-85,70],[-82,67],[-93,61],[-94,58.8],[-89,56.5],[-82,55],[-82,52.5],[-79,51.5],[-78,55],[-77,60],[-78,62.5],[-73,62],[-70,60],[-64,60.5],[-61,56],[-56,52],[-59,48],[-65,49],[-65,45],[-70,43.7],[-70,41.7],[-74,40.5],[-75.5,38],[-76,35],[-78,33.8],[-81,31.5],[-80,27],[-80.3,25.2],[-82,26.5],[-83,29],[-85,30],[-89,30.2],[-90,29.1],[-94,29.5],[-97.4,27.5],[-97.5,25],[-97.7,22],[-96,19.2],[-94.5,18.2],[-91,18.6],[-90.5,21],[-87,21.5],[-87.4,18.5],[-88.2,16],[-85,15.5],[-83.3,15],[-83.5,11],[-82.6,9.4],[-80,9.3],[-77.5,8.7],[-78,7.2],[-80.5,7.3],[-82.8,8.2],[-85.7,10.5],[-87.7,13],[-90.5,13.9],[-94.5,16.2],[-97,15.8],[-101,17.2],[-105.5,20],[-106,23.2],[-109.5,25.5],[-112.8,29],[-114.8,31.5],[-114.7,30],[-112.2,27],[-110,23],[-109.5,22.9],[-112,25],[-115,28],[-116.5,31.8],[-118.5,34],[-120.6,34.5],[-122.5,37.5],[-124.2,40.3],[-124.5,43],[-124,46.2],[-124.7,48.4],[-123,48.5],[-125,50],[-128,51],[-130.5,54.5],[-134,57],[-137,58.5],[-140,59.7],[-146,60.5],[-150.5,59.5],[-152,58.5],[-157,57],[-162,55],[-164.5,54.5],[-160,58.6],[-162,60],[-165,61.5],[-166,64]],
+[[-80,73.5],[-70,71],[-62,67],[-65,63],[-72,64],[-78,64.5],[-80,68],[-90,70],[-85,73]],
+[[-120,72],[-105,73],[-100,70],[-110,68.5],[-118,69]],
+[[-59,47.5],[-56,51.5],[-53,49.5],[-53,47]],
+[[-73,78],[-60,82],[-30,83.5],[-20,80],[-18,76],[-20,70],[-25,68],[-40,65],[-43,60],[-50,62],[-54,67],[-58,75],[-66,76]],
+[[-24,65.5],[-22,66.4],[-16,66.5],[-14,65],[-18,63.5],[-22,63.8]],
+[[-85,22],[-80,23.2],[-74,20.2],[-78,20],[-82,22.5]],
+[[-74.5,18.5],[-72,19.8],[-68.5,18.6],[-71,17.8]],
+// Amerika Selatan
+[[-77.3,8.5],[-75,10.8],[-72,12],[-71.5,10.8],[-68,10.6],[-64,10.6],[-61.5,10.5],[-60,8.5],[-57,6],[-52,5],[-50,1.5],[-49.5,-1],[-44,-2.5],[-40,-3],[-35,-5.2],[-34.8,-8],[-37,-12],[-39,-17],[-40,-20.5],[-42,-23],[-45,-24],[-48.5,-26],[-48.7,-28.5],[-51,-31],[-53,-34],[-55,-35],[-57,-35],[-58.5,-34.5],[-57,-37.5],[-62,-39],[-65,-41],[-65,-45],[-67.5,-46.5],[-66,-48],[-69,-51],[-68.5,-53.5],[-65.5,-55],[-70,-55],[-74,-52],[-75,-47],[-73.8,-42],[-73.5,-37],[-71.5,-30],[-70.2,-23],[-70.3,-18.5],[-75,-15.5],[-77,-12],[-79.5,-7],[-81.2,-5],[-80.3,-2.5],[-79.8,0.5],[-78.5,2.5],[-77.5,4],[-77.3,6.5]],
+// Afrika
+[[-17,21],[-16,24],[-13,27.7],[-10,29.5],[-9.5,32],[-6.5,34],[-5.5,35.8],[-2,35.1],[2,36.8],[10,37.2],[11,35],[10.2,33.8],[12,32.9],[15,32.3],[19,30.3],[20,32],[23,32.7],[26,31.6],[31,31.5],[32.5,31.2],[34.2,28],[35.5,24],[37,21],[38.5,18],[40,15.5],[43,12.5],[44,10.5],[51,11.8],[51,10],[48,5],[44,1.5],[41,-2],[39.5,-5],[39.3,-8],[40.5,-11],[40.7,-15],[35,-19],[35.5,-22.5],[32.8,-25.5],[32.5,-28.5],[30,-31.5],[27,-33.5],[22,-34.2],[18.5,-34.2],[17.5,-32],[15,-27.5],[14.5,-22.5],[11.8,-17.5],[13.5,-12],[12.5,-6],[9,-1],[9.5,3.7],[6,4.3],[4,6.3],[-1,5],[-4,5.2],[-7.5,4.4],[-12,7.5],[-15,11],[-17.2,14.7],[-16.5,19]],
+[[49.3,-12],[50.5,-15.5],[49.5,-18],[47.2,-24.8],[44,-25],[43.5,-21],[44.2,-17],[47,-14.5]],
+// Eurasia
+[[-9,37],[-9,43],[-1.5,43.5],[-1.5,46],[-4.5,48.2],[-1.5,48.7],[1.5,50.5],[4,51.5],[5,53.2],[8.5,54],[8.5,57],[10.5,57.8],[10.5,56],[12,54.2],[14,54],[19,54.5],[21,57],[24,57.3],[23.5,59.5],[28,59.5],[30,60],[23,60.5],[21.5,61.5],[21.5,63],[25,65.2],[22,65.8],[17.5,62.5],[17.5,60.5],[19,59.5],[18,58.5],[16.5,56.5],[14.5,56],[12.8,55.5],[11,58.5],[8,58],[5.5,59],[5,62],[10,64.5],[14,67.5],[18,69.8],[25,71],[31,70.2],[33,69.4],[41,67.5],[40,66.2],[34,66.7],[33,64.5],[37,63.8],[40.5,64.8],[44,66.2],[43,68.5],[46.5,68],[53,68.5],[60,69.2],[68,68.7],[69,73],[73,72.8],[75,71.5],[80,73.5],[87,74.5],[100,76.5],[104,77.7],[113,74],[128,72],[130,70.8],[140,72.5],[150,71.5],[160,69.7],[170,70],[180,69],[180,65],[173,61.5],[166,59.5],[163,57.5],[162.5,55],[158.5,52.5],[156.5,51],[155.8,57.5],[152,59],[143,59.3],[141,53.5],[140.5,48],[135,43.3],[131,42.5],[129.5,41],[128,39],[129.5,36],[129,35],[126.5,34.5],[126.5,37.5],[125,39.5],[121.5,39],[122,40.5],[118,39],[120,37.5],[122.5,37],[119,35],[121.5,32],[122,30],[120,26.5],[117,23.5],[113.5,22.2],[110,20.3],[108,21.5],[106.5,20],[105.8,19],[108.5,15.5],[109.2,12],[107,10.5],[105,8.7],[104.8,10.3],[103,10.5],[100.8,13.3],[100,12.5],[99.5,10],[100.3,7.5],[102.5,5.5],[103.5,3.5],[104,1.4],[103,1.3],[101,2.8],[100.5,5],[98.5,8],[98.5,10.5],[97.7,16.5],[94.5,17],[94,19],[92,21],[90.5,22.2],[87.2,21.5],[85,19.5],[82,17],[80.2,15.5],[80,12.5],[79.8,10.3],[77.5,8.2],[76,10],[74.5,14],[73,17.5],[72.8,20.5],[70,21],[69,22.5],[66.5,25.3],[62,25.2],[57.5,25.7],[56.3,27],[54,26.5],[51,27.9],[48.5,30],[48,29.5],[50,26],[51.5,24.5],[54.5,24.2],[56.5,26],[56.8,24.5],[58.8,23.5],[59.8,22.5],[57.5,19],[55,17],[52,16],[47,13.5],[43.5,12.7],[42.5,16.5],[40,20],[37.5,25],[35,28],[34.8,29.5],[34.2,31.5],[35,33.5],[36,35.8],[36,36.8],[32,36.2],[28,36.7],[26.5,38.8],[26.3,40],[28,41],[29,41.2],[31,41.1],[35,42],[38,41],[41.5,41.5],[41.5,43],[37.5,45],[38,46.5],[35,45.5],[33,45],[32,46.2],[30.5,46.5],[28.7,44.2],[28,42],[26,40.8],[24,40.8],[22.5,40.4],[23,38],[22.2,36.5],[21.2,38.2],[19.5,41],[18.5,42.5],[15.5,45],[13.7,45.2],[12.3,45.3],[12.5,44],[14,42.5],[16.1,41.9],[18.5,40.2],[16.5,38.5],[15.7,37.9],[16,39.5],[15.5,40],[12.5,41.3],[10,43.5],[8,44],[6,43.2],[3.2,43],[3,42],[0.8,41],[-0.5,39],[0,38.7],[-1.2,37.5],[-2.5,36.7],[-5.3,36],[-6.3,36.8]],
+[[-5.5,50],[1.5,51],[1.7,52.7],[0,53.5],[-1.5,55.5],[-2,56.5],[-1.8,57.5],[-3.5,58.6],[-5,58.5],[-6,57],[-5.5,55.5],[-3.5,54.8],[-3,53.4],[-4.5,53],[-5,51.7],[-3.5,51.3]],
+[[-10,52],[-6,52.2],[-6,54],[-8,55.2],[-10,54]],
+[[130,31],[131.5,33.5],[135,34.2],[136.8,34.5],[140,35],[141,38.5],[142,40.5],[141.2,41.5],[140,41],[139.5,38],[137,37],[136,36],[132.5,35.5],[130.8,33.8]],
+[[140,42],[141.5,45.4],[145.5,44],[143.2,42],[141,41.8]],
+[[79.8,9.5],[81.8,7.5],[81,6],[80,6],[79.7,8]],
+[[120.2,23],[121.5,25.1],[122,24.5],[121,22]],
+[[11,78],[17,80],[27,80],[22,77],[16,76.5]],
+[[52,71],[56,75],[67,77],[60,75],[55,70.5]],
+// Filipina
+[[120,18.5],[122.2,18.5],[122,16.5],[124,13.5],[121.8,13.8],[120.5,14.5],[120,16]],
+[[122,7.5],[125.5,9.8],[126.5,7],[125.5,5.8],[123.5,7.2]],
+[[122,12],[125,12.5],[125.5,10.5],[123,10]],
+// Indonesia
+[[95.3,5.6],[97.5,5.2],[100,3],[103,1],[104,-1.5],[106,-3],[105.8,-5.8],[104.5,-5.9],[102,-4],[100.2,-1],[98.5,1.5],[96,3.5]],
+[[105.2,-6.8],[106.5,-5.9],[108.5,-6.5],[110.5,-6.9],[112.7,-6.9],[114.4,-7.8],[114.4,-8.7],[111,-8.3],[108,-7.8],[106.3,-7.4]],
+[[115,-8.3],[119,-8.3],[119,-8.8],[116,-8.9],[115,-8.7]],
+[[119.5,-8.5],[123,-8.2],[123,-8.7],[120,-8.9]],
+[[123.5,-9.5],[127,-8.3],[127,-9],[124,-10.4]],
+[[109,1.5],[109,-1.5],[110.3,-3],[111.8,-3.5],[114.5,-4],[116,-3.8],[116.5,-1.5],[117.8,0.5],[119,1],[118,4.2],[116.7,6.8],[115.5,5.3],[113,3.2],[111,1.9]],
+[[119.5,0.8],[120.5,1.2],[123.5,0.8],[125,1.5],[124.5,0.4],[121.5,0.4],[120.5,-1],[123,-0.8],[122.5,-2.5],[121.5,-4.3],[123,-5.2],[122.5,-5.5],[120.5,-5.5],[120.4,-3.5],[119.5,-3.5],[118.8,-2.6],[119.3,-0.5]],
+[[127.4,2],[128.5,1],[128,-0.5],[127.4,0.5]],
+[[131,-0.8],[134,-0.8],[135.5,-3.3],[138.5,-1.8],[141,-2.6],[144.5,-3.8],[147.5,-6],[148,-8],[150.5,-10.5],[147.5,-10],[145,-7.8],[143,-9],[141.5,-9],[139.5,-8],[138,-8.4],[137.8,-5],[135,-4.4],[133,-4],[132,-2.8]],
+// Oseania
+[[113.5,-22],[114,-26],[115,-34],[118,-35],[123.5,-34],[126,-32.2],[131,-31.5],[134,-32.7],[137.5,-33.2],[137.8,-35.2],[140,-37.8],[144,-38.4],[147,-38.5],[150,-37.5],[151,-34],[153,-30],[153.2,-26],[151,-23.5],[149,-20.5],[146,-18.8],[145.2,-15],[143.5,-13.5],[142.5,-10.7],[141,-13.5],[141.7,-15.5],[140.8,-17.5],[139.5,-17],[136,-15.5],[136.8,-12.5],[132.5,-11.5],[130,-12.5],[129.5,-15],[126,-14],[125,-15.5],[122.5,-17.8],[121,-19.6],[117,-20.7],[114.5,-21.8]],
+[[144.7,-40.8],[148.3,-40.9],[147.5,-43.2],[145.5,-42.5]],
+[[172.7,-34.5],[175,-36.5],[178.5,-37.7],[177,-39.5],[175,-41.5],[174.5,-39.8],[173.8,-39.2],[174.8,-37]],
+[[172.7,-40.5],[174.3,-41.7],[172,-43.7],[170.5,-46],[167,-46.3],[166.5,-45.3],[168,-44],[171.2,-42.2]],
+// Hawaii (sedikit diperbesar agar tertangkap grid)
+[[-160.5,22.5],[-158,22.5],[-154.5,20.5],[-154.5,18.8],[-156.5,18.8],[-158,21]],
+// Antartika
+[[-180,-78],[-150,-77],[-120,-74],[-100,-72],[-75,-73],[-62,-66],[-60,-64],[-58,-63.5],[-62,-70],[-45,-77],[-30,-76],[-10,-71],[20,-70],[45,-67],[70,-68],[90,-66],[110,-66],[140,-66.5],[165,-70],[180,-78],[180,-90],[-180,-90]]
+];
+const LAKE=[[[47,45],[50,46.5],[53.5,45.5],[53,41],[54,37],[50,37],[49,40],[47.5,43]]];
+
+// ====================== Globe dunia ======================
+function inPoly(x,y,p){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) c=!c;}return c;}
+function isLand(lon,lat){
+  let land=false;
+  for(let i=0;i<LAND.length;i++){if(inPoly(lon,lat,LAND[i])){land=true;break;}}
+  if(!land) return false;
+  for(let i=0;i<LAKE.length;i++){if(inPoly(lon,lat,LAKE[i])) return false;}
+  return true;
+}
+const G_STEP=4,G_NLON=90;
+const G_LATS=[],G_LONS=[];
+for(let la=-60;la<=60;la+=G_STEP) G_LATS.push(la);
+for(let lo=-180;lo<180;lo+=G_STEP) G_LONS.push(lo);
+const STCOL=['#4A5584','#8F9AC4','#FF8FA3','#F2C14E','#6FD6C2'];            // indeks status 0..4
+const PLCOL=['#4A5584','#8F9AC4','#FF8FA3','#FF9A5A','#F2C14E','#6FD6C2'];  // indeks level+1
+const ST_TXT=['Belum terjadi ijtimak','Bulan terbenam lebih dulu daripada matahari','Belum memenuhi standar','Hampir memenuhi standar','Memenuhi standar'];
+const AI_TXT={'-1':'Belum terjadi ijtimak','0':'Bulan terbenam lebih dulu daripada matahari','1':'Hampir mustahil terlihat','2':'Sulit, perlu alat optik','3':'Mungkin terlihat','4':'Sangat mungkin terlihat'};
+const REGIONS=[['Indonesia',95,141,-11,6],['Asia Tenggara',92,141,-11,25],['Asia Selatan',60,92,5,35],['Asia Timur',100,145,25,55],['Timur Tengah',34,62,12,40],['Afrika',-18,52,-35,35],['Eropa',-10,40,36,60],['Amerika Utara',-125,-60,15,60],['Amerika Selatan',-80,-35,-55,12],['Australia dan Oseania',110,180,-47,-12]];
+const GLABELS=[['Asia',90,45],['Eropa',15,52],['Afrika',20,5],['Amerika Utara',-100,45],['Amerika Selatan',-60,-14],['Australia',134,-25],['Indonesia',116,-1.5],['Antartika',0,-78]];
+const FOCUS=[['Indonesia',115,-4],['Asia Tenggara',110,5],['Timur Tengah',45,25],['Eropa',15,48],['Afrika',20,5],['Amerika Utara',-100,40],['Amerika Selatan',-60,-15],['Australia',135,-25],['Pasifik',-170,0]];
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+const GL={inited:false,cam:{lon:rad(112),lat:rad(-6)},rot:!reduceMotion,play:false,autoplayed:false,t:0,t0:0,t1:1,D0:0,k:0,jc:0,cells:null,cityR:null,computing:false,prog:0,token:0,dirty:true,sel:null,layer:true,mode:'st',orgId:null,last:0,land:null,off:null,stars:[],drag:null,coast:[],coastIndo:[],grat:[]};
+const GO=()=>orgById(GL.orgId||ORG.id);
+
+function buildOutlines(){
+  const dense=(a,b,out)=>{
+    const n=Math.max(1,Math.ceil(Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]))/1.5));
+    for(let i=1;i<=n;i++){const t=i/n,lon=a[0]+(b[0]-a[0])*t,lat=a[1]+(b[1]-a[1])*t;out.push(rad(lon),Math.sin(rad(lat)),Math.cos(rad(lat)));}
+  };
+  LAND.forEach(p=>{
+    let mnLo=999,mxLa=-999,mnLa=999;
+    p.forEach(v=>{mnLo=Math.min(mnLo,v[0]);mxLa=Math.max(mxLa,v[1]);mnLa=Math.min(mnLa,v[1]);});
+    const indo=mnLo>=94&&mnLo<=141&&mxLa<=7&&mnLa>=-11;
+    const runs=[];let cur=[];
+    for(let i=0;i<p.length;i++){
+      const a=p[i],b=p[(i+1)%p.length];
+      const skip=(a[0]===b[0]&&Math.abs(a[0])===180)||(a[1]===-90&&b[1]===-90)||Math.abs(b[0]-a[0])>100;
+      if(skip){if(cur.length>3) runs.push(new Float32Array(cur));cur=[];continue;}
+      if(!cur.length) cur.push(rad(a[0]),Math.sin(rad(a[1])),Math.cos(rad(a[1])));
+      dense(a,b,cur);
+    }
+    if(cur.length>3) runs.push(new Float32Array(cur));
+    (indo?GL.coastIndo:GL.coast).push(...runs);
+  });
+  for(let lo=-180;lo<180;lo+=30){const a=[];for(let la=-80;la<=80;la+=4) a.push(rad(lo),Math.sin(rad(la)),Math.cos(rad(la)));GL.grat.push(new Float32Array(a));}
+  for(let la=-60;la<=60;la+=30){const a=[];for(let lo=-180;lo<=180;lo+=4) a.push(rad(lo),Math.sin(rad(la)),Math.cos(rad(la)));GL.grat.push(new Float32Array(a));}
+}
+function initGlobe(){
+  if(!GL.inited){
+    GL.inited=true;
+    GL.orgId=ORG.id;
+    const arr=[];
+    for(let lat=-88;lat<=88;lat+=2.2){
+      const n=Math.max(1,Math.round(360*Math.cos(rad(lat))/2.2));
+      for(let i=0;i<n;i++){const lon=-180+(i+0.5)*360/n;if(isLand(lon,lat)) arr.push(rad(lon),Math.sin(rad(lat)),Math.cos(rad(lat)));}
+    }
+    GL.land=new Float32Array(arr);
+    buildOutlines();
+    const sr=mulberry32(5);
+    for(let i=0;i<90;i++) GL.stars.push([sr(),sr(),0.25+sr()*0.6,0.5+sr()*1.4]);
+    GL.off=document.createElement('canvas');GL.off.width=GL.off.height=200;
+    $('g-date').value=$('date').value||'';
+    const go=$('g-org');
+    ORGS.forEach(o=>{const op=document.createElement('option');op.value=o.id;op.textContent=o.name;go.appendChild(op);});
+    const gf=$('g-focus');
+    FOCUS.forEach((f2,i)=>{const op=document.createElement('option');op.value=i;op.textContent=f2[0];gf.appendChild(op);});
+    syncGlobeOrg();
+    go.addEventListener('change',()=>{GL.orgId=go.value;scoreCells();summarizeGlobe();GL.dirty=true;});
+    gf.addEventListener('change',()=>{const f2=FOCUS[+gf.value];GL.rot=false;GL.cam.lon=rad(f2[1]);GL.cam.lat=rad(f2[2]);syncGlobeUI();GL.dirty=true;});
+    $('g-mst').addEventListener('click',()=>setMode('st'));
+    $('g-mpl').addEventListener('click',()=>setMode('pl'));
+    const cv=$('gcv');
+    cv.addEventListener('pointerdown',e=>{
+      GL.drag={x:e.clientX,y:e.clientY,moved:0,lon:GL.cam.lon,lat:GL.cam.lat};
+      try{cv.setPointerCapture(e.pointerId);}catch(_){}
+      cv.style.cursor='grabbing';
+    });
+    cv.addEventListener('pointermove',e=>{
+      if(!GL.drag) return;
+      const dx=e.clientX-GL.drag.x,dy=e.clientY-GL.drag.y,k=rad(0.35);
+      GL.drag.moved=Math.max(GL.drag.moved,Math.abs(dx)+Math.abs(dy));
+      GL.cam.lon=GL.drag.lon-dx*k;GL.cam.lat=clamp(GL.drag.lat+dy*k,rad(-75),rad(75));GL.dirty=true;
+    });
+    cv.addEventListener('pointerup',e=>{if(GL.drag&&GL.drag.moved<5) pickAt(e);GL.drag=null;cv.style.cursor='grab';});
+    cv.addEventListener('pointercancel',()=>{GL.drag=null;cv.style.cursor='grab';});
+    $('g-date').addEventListener('change',()=>computeGlobe());
+    $('g-prev').addEventListener('click',()=>stepLunation(-1));
+    $('g-next').addEventListener('click',()=>stepLunation(1));
+    $('g-m1').addEventListener('click',()=>shiftDay(-1));
+    $('g-p1').addEventListener('click',()=>shiftDay(1));
+    $('g-time').addEventListener('input',()=>{GL.play=false;GL.t=GL.t0+$('g-time').value/1000*(GL.t1-GL.t0);syncGlobeUI();GL.dirty=true;});
+    $('g-play').addEventListener('click',()=>{
+      if(!GL.cells) return;
+      GL.play=!GL.play;
+      if(GL.play&&GL.t>=GL.t1-1e-6) GL.t=GL.t0;
+      syncGlobeUI();GL.dirty=true;
+    });
+    $('g-rot').addEventListener('click',()=>{GL.rot=!GL.rot;syncGlobeUI();});
+    $('g-layer').addEventListener('change',()=>{GL.layer=$('g-layer').checked;GL.dirty=true;});
+    if(typeof ResizeObserver!=='undefined'){new ResizeObserver(()=>resizeGlobe()).observe($('gcv').parentNode);}
+    else window.addEventListener('resize',resizeGlobe);
+    computeGlobe();
+    GL.last=performance.now();requestAnimationFrame(gloop);
+  }
+  resizeGlobe();GL.dirty=true;syncGlobeUI();
+}
+function setMode(m){
+  GL.mode=m;
+  $('g-mst').setAttribute('aria-pressed',String(m==='st'));
+  $('g-mpl').setAttribute('aria-pressed',String(m==='pl'));
+  renderLegend();updateBadge();GL.dirty=true;
+}
+function syncGlobeOrg(){if($('g-org')) $('g-org').value=GL.orgId||ORG.id;}
+function resizeGlobe(){
+  const cv=$('gcv');if(!cv) return;
+  const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),s=Math.max(240,Math.round((r.width||480)*dpr));
+  if(cv.width!==s||cv.height!==s){cv.width=s;cv.height=s;}
+  GL.dirty=true;
+}
+function shiftDay(n){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec($('g-date').value);if(!m) return;
+  const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3])+n*864e5);
+  $('g-date').value=d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+  computeGlobe();
+}
+function stepLunation(n){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec($('g-date').value);if(!m) return;
+  const D0=Date.UTC(+m[1],+m[2]-1,+m[3])/864e5+2440587.5;
+  $('g-date').value=dateInputValue(conjunction(Math.round((D0+0.75-K0JD)/SYN)+n),0);
+  computeGlobe();
+}
+function syncGlobeUI(){
+  if(GL.t1>GL.t0) $('g-time').value=Math.round((GL.t-GL.t0)/(GL.t1-GL.t0)*1000);
+  $('g-timel').textContent=fmtDate(GL.t,0)+', '+fmtTime(GL.t,0,false)+' UT';
+  $('g-play').textContent=GL.play?'Jeda waktu':'Jalankan waktu';
+  $('g-rot').setAttribute('aria-pressed',String(GL.rot));
+}
+async function computeGlobe(){
+  const my=++GL.token,m=/^(\d{4})-(\d{2})-(\d{2})$/.exec($('g-date').value);
+  if(!m) return;
+  GL.computing=true;GL.cells=null;GL.cityR=null;GL.sel=null;GL.play=false;GL.dirty=true;
+  $('ginfo').innerHTML='<p class="hint" style="margin:0">Klik atau ketuk sebuah titik pada globe untuk melihat rincian.</p>';
+  $('g-sum').textContent='Menghitung peta…';$('g-regions').innerHTML='';$('g-cities').innerHTML='';
+  const D0=Date.UTC(+m[1],+m[2]-1,+m[3])/864e5+2440587.5;
+  GL.D0=D0;GL.t0=D0+0.15;GL.t1=D0+1.4;GL.t=GL.t1;
+  const k=Math.round((D0+0.75-K0JD)/SYN),jc=conjunction(k);
+  GL.k=k;GL.jc=jc;
+  const cells=[],total=G_LATS.length*G_LONS.length;
+  let done=0;
+  for(const lat of G_LATS){
+    for(const lon of G_LONS){
+      const r=evening(D0+0.5-lon/360,{lat,lon,elev:0,tz:0},k,jc,false);
+      cells.push({lat,lon,lr:rad(lon),sp:Math.sin(rad(lat)),cp:Math.cos(rad(lat)),ts:r?r.ts:D0+0.75-lon/360,r,V:r?criteria(r).V:-99,lvl:-1,p:0,st:0,ok:false});
+      done++;
+    }
+    $('gprog').textContent='Menghitung peta… '+Math.round(done/total*100)+'%';
+    await tick();
+    if(my!==GL.token) return;
+  }
+  const cityR=CITIES.map(c=>evening(D0+0.5-c[2]/360,{lat:c[1],lon:c[2],elev:0,tz:c[3]},k,jc,true));
+  GL.cells=cells;GL.cityR=cityR;GL.computing=false;
+  scoreCells();summarizeGlobe();
+  $('gprog').textContent='';
+  const dd=Math.abs(D0+0.5-jc);
+  $('gmeta').textContent='Ijtimak: '+fmtDate(jc,0)+', '+fmtTime(jc,0,true)+' UT. Titik dihitung tiap '+G_STEP+'° untuk lintang 60°LS sampai 60°LU.'+(dd>3?' Tanggal ini berjarak '+f(dd,0)+' hari dari ijtimak, jadi peta kurang bermakna.':'');
+  if(!GL.autoplayed&&!reduceMotion){GL.autoplayed=true;GL.t=GL.t0;GL.play=true;}
+  syncGlobeUI();GL.dirty=true;
+}
+function cellState(o,r){
+  if(!r||r.age<=0) return 0;
+  if(orgTest(o,r)) return 4;
+  if(r.lag!==null&&r.lag<=0) return 1;
+  if(orgNear(o,r)) return 3;
+  return 2;
+}
+// Peluang peta globe: hanya dari tinggi bulan dan elongasi menurut standar terpilih.
+// Selisih nilai terhadap batas standar diubah menjadi peluang lewat kurva logistik:
+// tepat di batas = 50%, makin jauh di atas batas makin mendekati 100%, makin jauh di bawah makin mendekati 0%.
+// Untuk Odeh, nilai V (yang disusun dari tinggi bulan dan lebar sabit hasil elongasi) dipakai sebagai ukuran selisihnya.
+function geoProb(o,r){
+  if(!r||r.age<=0) return 0;
+  let m;
+  if(o.type==='odeh') m=(criteria(r).V-2)/0.7;
+  else m=Math.min((orgAlt(o,r)-o.alt)/1.0,(r.elongG-o.elong)/1.5);
+  return 1/(1+Math.exp(-1.6*m));
+}
+function scoreCells(){
+  if(!GL.cells) return;
+  const o=GO();
+  for(const c of GL.cells){
+    const r=c.r;
+    c.st=cellState(o,r);c.ok=c.st===4;
+    if(!r||r.age<=0){c.lvl=-1;c.p=0;continue;}
+    const p=geoProb(o,r);
+    c.p=p;
+    c.lvl=p>=0.75?4:p>=0.5?3:p>=0.2?2:1;
+  }
+}
+function scopeDecision(o){
+  const sc=scopeFor('auto',o);
+  const dayDate=sc.key==='global'?GL.D0:GL.D0+0.5-7/24;
+  const off=Math.round(dayDate-sc.dayJD(GL.jc,0));
+  const L=listAt(GL.k,off,sc);
+  let n=0,best=null;
+  for(const x of L.list){if(orgTest(o,x.r)) n++;if(x.r.age>0&&(!best||x.r.altR>best.r.altR)) best=x;}
+  return {sc,n,total:L.list.length,best};
+}
+function renderLegend(){
+  const items=GL.mode==='st'
+    ?[[4,'Memenuhi standar'],[3,'Hampir memenuhi (di atas 85% batas)'],[2,'Belum memenuhi standar'],[1,'Bulan terbenam lebih dulu'],[0,'Belum terjadi ijtimak']].map(x=>[STCOL[x[0]],x[1]])
+    :[[5,'Sangat mungkin terlihat (75% atau lebih)'],[4,'Mungkin terlihat (50–75%)'],[3,'Sulit, perlu alat optik (20–50%)'],[2,'Hampir mustahil (di bawah 20%)'],[0,'Belum terjadi ijtimak']].map(x=>[PLCOL[x[0]],x[1]]);
+  $('g-legend').innerHTML=items.map(x=>'<span><i style="background:'+x[0]+'"></i>'+x[1]+'</span>').join('');
+}
+function updateBadge(){
+  const o=GO();
+  $('gbadge').innerHTML='<b>'+esc(o.short)+'</b><span>'+(GL.mode==='st'?orgThreshold(o):'Peluang dari tinggi bulan dan elongasi menurut standar ini')+'</span>';
+}
+function summarizeGlobe(){
+  if(!GL.cells) return;
+  const o=GO();
+  renderLegend();updateBadge();
+  const valid=GL.cells.filter(c=>c.r&&c.r.age>0),ok=valid.filter(c=>c.ok);
+  const sd=scopeDecision(o);
+  let txt='Menurut '+o.name+': '+ok.length+' dari '+valid.length+' titik yang sudah melewati ijtimak memenuhi standar.';
+  if(sd.n>0){
+    txt+=' Di lingkup '+(sd.sc.key==='global'?'dunia':'Indonesia')+' ada '+sd.n+' dari '+sd.total+' titik acuan yang memenuhi'+(sd.best?' (terbaik dekat '+nearestCity(sd.best.loc.lat,sd.best.loc.lon)+')':'')+', sehingga awal bulan jatuh keesokan harinya menurut standar ini.';
+  }else{
+    txt+=' Di lingkup '+(sd.sc.key==='global'?'dunia':'Indonesia')+' belum ada titik acuan yang memenuhi, sehingga bulan berjalan digenapkan 30 hari menurut standar ini.';
+  }
+  $('g-sum').textContent=txt;
+  // wilayah
+  $('g-regions').innerHTML=REGIONS.map(g=>{
+    const cs=GL.cells.filter(c=>c.lon>=g[1]&&c.lon<=g[2]&&c.lat>=g[3]&&c.lat<=g[4]);
+    const v=cs.filter(c=>c.r&&c.r.age>0),k2=v.filter(c=>c.ok);
+    let tg,cl;
+    if(!v.length){tg='Belum ada ijtimak';cl='no';}
+    else if(k2.length===v.length){tg='Seluruh wilayah memenuhi';cl='ok';}
+    else if(k2.length>0){tg='Sebagian memenuhi';cl='mid';}
+    else{tg='Belum memenuhi';cl='no';}
+    const pc=v.length?Math.round(k2.length/v.length*100):0;
+    return '<div class="rg"><div class="rgh"><b>'+g[0]+'</b><span class="tag '+cl+'">'+tg+'</span></div><div class="rgb"><i style="width:'+pc+'%"></i></div><small>'+k2.length+' dari '+v.length+' titik memenuhi'+(v.length?' ('+pc+'%)':'')+'</small></div>';
+  }).join('');
+  // kota
+  const rowsOf=grp=>CITIES.map((c,i)=>({c,r:GL.cityR[i]})).filter(x=>x.c[4]===grp).map(x=>{
+    const r=x.r;let st,txt2;
+    if(!r){return '<tr><td>'+x.c[0]+'</td><td>–</td><td>–</td></tr>';}
+    const s=cellState(o,r);
+    st=s===4?tag('ok','Memenuhi'):s===3?tag('mid','Hampir'):s===0?tag('no','Belum ijtimak'):tag('no','Belum');
+    txt2=r.age>0?f(orgAlt(o,r),1)+'° / '+f(r.elongG,1)+'°':'–';
+    return '<tr><td>'+x.c[0]+'</td><td class="num">'+txt2+'</td><td>'+st+'</td></tr>';
+  }).join('');
+  const nOkId=CITIES.filter((c,i)=>c[4]==='id'&&GL.cityR[i]&&orgTest(o,GL.cityR[i])).length,nId=CITIES.filter(c=>c[4]==='id').length;
+  $('g-cities').innerHTML=
+    '<div class="tablewrap"><table><thead><tr><th>Kota di Indonesia ('+nOkId+' dari '+nId+' memenuhi)</th><th class="num">Tinggi / elongasi</th><th>Status</th></tr></thead><tbody>'+rowsOf('id')+'</tbody></table></div>'+
+    '<div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Kota dunia</th><th class="num">Tinggi / elongasi</th><th>Status</th></tr></thead><tbody>'+rowsOf('dn')+'</tbody></table></div>';
+}
+function gloop(now){
+  const dt=Math.min(0.1,Math.max(0,(now-GL.last)/1000));GL.last=now;
+  if(VIEW==='hilal'){
+    if(GL.rot&&!GL.drag){GL.cam.lon+=rad(7)*dt;GL.dirty=true;}
+    if(GL.play&&GL.cells){
+      GL.t+=dt*(GL.t1-GL.t0)/22;
+      if(GL.t>=GL.t1){GL.t=GL.t1;GL.play=false;}
+      syncGlobeUI();GL.dirty=true;
+    }
+    if(GL.dirty){GL.dirty=false;drawGlobe();}
+  }
+  requestAnimationFrame(gloop);
+}
+function drawGlobe(){
+  const cv=$('gcv');if(!cv||!cv.getContext||!GL.land) return;
+  const ctx=cv.getContext('2d');if(!ctx) return;
+  const W=cv.width,H=cv.height,R=Math.min(W,H)*0.40,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#FFF7E0';
+  GL.stars.forEach(s=>{ctx.globalAlpha=s[2];ctx.fillRect(s[0]*W,s[1]*H,s[3]*W/640+0.5,s[3]*W/640+0.5);});
+  ctx.globalAlpha=1;
+  const p0=GL.cam.lat,l0=GL.cam.lon,sp0=Math.sin(p0),cp0=Math.cos(p0);
+  const Sn=sunEq(GL.t),Mo=moonEq(GL.t);
+  const sLon=rad(Sn.ra-Sn.gast),sLat=rad(Sn.dec),mLon=rad(Mo.ra-Mo.gast),mLat=rad(Mo.dec);
+  const P=(lon,sp,cp)=>{const dl=lon-l0,cd=Math.cos(dl);return [cp*Math.sin(dl),cp0*sp-sp0*cp*cd,sp0*sp+cp0*cp*cd];};
+  const sv=P(sLon,Math.sin(sLat),Math.cos(sLat));
+  let g=ctx.createRadialGradient(cx,cy,R*0.98,cx,cy,R*1.2);
+  g.addColorStop(0,'rgba(110,160,255,0.40)');g.addColorStop(1,'rgba(110,160,255,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R*1.2,0,Math.PI*2);ctx.fill();
+  const oc=GL.off,n=oc.width,octx=oc.getContext('2d');
+  if(octx){
+    const img=octx.createImageData(n,n),d=img.data;
+    for(let iy=0;iy<n;iy++){
+      const y=1-(iy+0.5)/n*2;
+      for(let ix=0;ix<n;ix++){
+        const x=(ix+0.5)/n*2-1,r2=x*x+y*y,o=(iy*n+ix)*4;
+        if(r2>=1){d[o+3]=0;continue;}
+        const z=Math.sqrt(1-r2),L=x*sv[0]+y*sv[1]+z*sv[2],t=smooth(-0.2,0.32,L);
+        let rr=14+28*t,gg=26+92*t,bb=66+136*t;
+        const gl=0.5*Math.exp(-Math.pow((L-0.03)/0.08,2));
+        rr+=(255-rr)*gl;gg+=(150-gg)*gl;bb+=(90-bb)*gl;
+        const limb=0.62+0.38*Math.sqrt(z),rim=Math.pow(1-z,3)*0.28;
+        d[o]=Math.min(255,rr*limb+60*rim);d[o+1]=Math.min(255,gg*limb+110*rim);d[o+2]=Math.min(255,bb*limb+200*rim);d[o+3]=255;
+      }
+    }
+    octx.putImageData(img,0,0);
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.clip();
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(oc,cx-R-1,cy-R-1,2*R+2,2*R+2);
+    ctx.restore();
+  }
+  const strokeRuns=(runs)=>{
+    ctx.beginPath();
+    for(const run of runs){
+      let pen=false;
+      for(let i=0;i<run.length;i+=3){
+        const dl=run[i]-l0,sp=run[i+1],cp=run[i+2],cd=Math.cos(dl),z=sp0*sp+cp0*cp*cd;
+        if(z<=0.01){pen=false;continue;}
+        const x=cx+cp*Math.sin(dl)*R,y=cy-(cp0*sp-sp0*cp*cd)*R;
+        if(pen) ctx.lineTo(x,y);else{ctx.moveTo(x,y);pen=true;}
+      }
+    }
+    ctx.stroke();
+  };
+  ctx.lineWidth=Math.max(1,R*0.004);ctx.strokeStyle='rgba(200,215,255,0.13)';strokeRuns(GL.grat);
+  // peta peluang atau standar (di bawah garis pantai)
+  const rc=R*0.022;
+  if(GL.layer&&GL.cells){
+    const stm=GL.mode==='st';
+    for(const c of GL.cells){
+      const dl=c.lr-l0,cd=Math.cos(dl),z=sp0*c.sp+cp0*c.cp*cd;
+      if(z<=0.04) continue;
+      const x=c.cp*Math.sin(dl),y=cp0*c.sp-sp0*c.cp*cd;
+      const big=stm?c.st>=2:c.lvl>=1;
+      ctx.globalAlpha=(0.12+0.8*clamp((GL.t-c.ts)/0.05,0,1))*(big?1:0.55);
+      ctx.fillStyle=stm?STCOL[c.st]:PLCOL[c.lvl+1];
+      ctx.beginPath();ctx.arc(cx+x*R,cy-y*R,rc*(big?1:0.62)*(0.45+0.55*Math.sqrt(z)),0,6.2832);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  // daratan (titik) dan garis pantai
+  const Ld=GL.land,rd=Math.max(1.1,R*0.0095);
+  for(let i=0;i<Ld.length;i+=3){
+    const dl=Ld[i]-l0,sp=Ld[i+1],cp=Ld[i+2],cd=Math.cos(dl),z=sp0*sp+cp0*cp*cd;
+    if(z<=0.02) continue;
+    const x=cp*Math.sin(dl),y=cp0*sp-sp0*cp*cd,L=x*sv[0]+y*sv[1]+z*sv[2],t=smooth(-0.15,0.28,L);
+    ctx.fillStyle='rgb('+((96+120*t)|0)+','+((112+122*t)|0)+','+((152+28*t)|0)+')';
+    ctx.beginPath();ctx.arc(cx+x*R,cy-y*R,rd*(0.5+0.5*z),0,6.2832);ctx.fill();
+  }
+  ctx.lineWidth=Math.max(1.2,R*0.0055);ctx.strokeStyle='rgba(235,242,255,0.65)';strokeRuns(GL.coast);
+  ctx.lineWidth=Math.max(1.8,R*0.008);ctx.strokeStyle='#FFD9A0';strokeRuns(GL.coastIndo);
+  // garis senja (terminator)
+  {
+    const cs=Math.cos(sLat),s3=[cs*Math.cos(sLon),cs*Math.sin(sLon),Math.sin(sLat)];
+    let h3=Math.abs(s3[2])>0.99?[1,0,0]:[0,0,1];
+    let a3=[s3[1]*h3[2]-s3[2]*h3[1],s3[2]*h3[0]-s3[0]*h3[2],s3[0]*h3[1]-s3[1]*h3[0]];
+    const al=Math.hypot(a3[0],a3[1],a3[2]);a3=a3.map(v=>v/al);
+    const b3=[s3[1]*a3[2]-s3[2]*a3[1],s3[2]*a3[0]-s3[0]*a3[2],s3[0]*a3[1]-s3[1]*a3[0]];
+    ctx.beginPath();let pen=false,lab=null,bestLat=9;
+    for(let th=0;th<=360;th+=3){
+      const t=rad(th),px=Math.cos(t)*a3[0]+Math.sin(t)*b3[0],py=Math.cos(t)*a3[1]+Math.sin(t)*b3[1],pz=Math.cos(t)*a3[2]+Math.sin(t)*b3[2];
+      const lon=Math.atan2(py,px),lat=Math.asin(Math.max(-1,Math.min(1,pz))),v=P(lon,Math.sin(lat),Math.cos(lat));
+      if(v[2]<=0.01){pen=false;continue;}
+      const x=cx+v[0]*R,y=cy-v[1]*R;
+      if(pen) ctx.lineTo(x,y);else{ctx.moveTo(x,y);pen=true;}
+      if(Math.sin(lon-sLon)>0&&Math.abs(lat)<bestLat){bestLat=Math.abs(lat);lab=[x,y];}
+    }
+    ctx.lineWidth=Math.max(2,R*0.008);ctx.strokeStyle='rgba(255,184,107,0.85)';ctx.stroke();
+    if(lab){
+      ctx.font='600 '+Math.round(R*0.05)+'px "IBM Plex Sans",system-ui,sans-serif';ctx.textAlign='left';
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(3,6,20,.85)';ctx.strokeText('Garis senja',lab[0]+R*0.02,lab[1]-R*0.02);
+      ctx.fillStyle='#FFD9A0';ctx.fillText('Garis senja',lab[0]+R*0.02,lab[1]-R*0.02);
+    }
+  }
+  if(GL.sel){
+    const c=GL.sel,dl=c.lr-l0,cd=Math.cos(dl),z=sp0*c.sp+cp0*c.cp*cd;
+    if(z>0.04){
+      ctx.strokeStyle='#FFFFFF';ctx.lineWidth=Math.max(1.6,R*0.008);
+      ctx.beginPath();ctx.arc(cx+c.cp*Math.sin(dl)*R,cy-(cp0*c.sp-sp0*c.cp*cd)*R,rc*1.7,0,6.2832);ctx.stroke();
+    }
+  }
+  // label benua
+  ctx.font='600 '+Math.round(R*0.048)+'px "IBM Plex Sans",system-ui,sans-serif';ctx.textAlign='center';
+  GLABELS.forEach(lb=>{
+    const la=rad(lb[2]),v=P(rad(lb[1]),Math.sin(la),Math.cos(la));
+    if(v[2]<0.35) return;
+    const x=cx+v[0]*R,y=cy-v[1]*R,isId=lb[0]==='Indonesia';
+    ctx.lineWidth=3.5;ctx.strokeStyle='rgba(3,6,20,.85)';ctx.strokeText(lb[0],x,y);
+    ctx.fillStyle=isId?'#FFD9A0':'rgba(240,244,255,.92)';ctx.fillText(lb[0],x,y);
+  });
+  ctx.font=Math.round(R*0.062)+'px "IBM Plex Sans",system-ui,sans-serif';
+  const mark=(lon,lat,fn)=>{const sp=Math.sin(lat),cp=Math.cos(lat),v=P(lon,sp,cp);if(v[2]>0.02) fn(cx+v[0]*R,cy-v[1]*R);};
+  mark(sLon,sLat,(px,py)=>{
+    const gr=ctx.createRadialGradient(px,py,0,px,py,R*0.16);gr.addColorStop(0,'rgba(255,225,150,0.9)');gr.addColorStop(1,'rgba(255,200,120,0)');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(px,py,R*0.16,0,6.2832);ctx.fill();
+    ctx.fillStyle='#FFE7B8';ctx.beginPath();ctx.arc(px,py,R*0.035,0,6.2832);ctx.fill();
+    ctx.lineWidth=3;ctx.strokeStyle='rgba(3,6,20,.85)';ctx.strokeText('Matahari',px,py-R*0.07);
+    ctx.fillStyle='#FFF3D0';ctx.fillText('Matahari',px,py-R*0.07);
+  });
+  mark(mLon,mLat,(px,py)=>{
+    ctx.fillStyle='#F6EFD9';ctx.beginPath();ctx.arc(px,py,R*0.03,0,6.2832);ctx.fill();
+    ctx.lineWidth=3;ctx.strokeStyle='rgba(3,6,20,.85)';ctx.strokeText('Bulan',px,py-R*0.06);
+    ctx.fillStyle='#F6EFD9';ctx.fillText('Bulan',px,py-R*0.06);
+  });
+  const hl=getLoc();
+  if(hl) mark(rad(hl.lon),rad(hl.lat),(px,py)=>{
+    ctx.strokeStyle='#FFFFFF';ctx.lineWidth=Math.max(1.5,R*0.007);
+    ctx.beginPath();ctx.arc(px,py,R*0.025,0,6.2832);ctx.stroke();
+  });
+  ctx.strokeStyle='rgba(160,200,255,0.35)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.stroke();
+}
+function pickAt(e){
+  if(!GL.cells) return;
+  const cv=$('gcv'),rc=cv.getBoundingClientRect(),sc=cv.width/rc.width;
+  const px=(e.clientX-rc.left)*sc,py=(e.clientY-rc.top)*sc;
+  const R=Math.min(cv.width,cv.height)*0.40,x=(px-cv.width/2)/R,y=(cv.height/2-py)/R,rho=Math.hypot(x,y);
+  if(rho>1) return;
+  const c=Math.asin(rho),p0=GL.cam.lat,l0=GL.cam.lon;
+  let lat,lon;
+  if(rho<1e-9){lat=p0;lon=l0;}
+  else{
+    lat=Math.asin(Math.cos(c)*Math.sin(p0)+y*Math.sin(c)*Math.cos(p0)/rho);
+    lon=l0+Math.atan2(x*Math.sin(c),rho*Math.cos(p0)*Math.cos(c)-y*Math.sin(p0)*Math.sin(c));
+  }
+  const la=deg(lat),lo=n180(deg(lon));
+  if(la<-62||la>62){
+    $('ginfo').innerHTML='<p class="hint" style="margin:0">Titik ini di luar wilayah hitung (60°LS sampai 60°LU).</p>';
+    GL.sel=null;GL.dirty=true;return;
+  }
+  const i=clamp(Math.round((la+60)/G_STEP),0,G_LATS.length-1),j=((Math.round((lo+180)/G_STEP)%G_NLON)+G_NLON)%G_NLON;
+  GL.sel=GL.cells[i*G_NLON+j];GL.dirty=true;showCell(GL.sel);
+}
+function showCell(c){
+  const box=$('ginfo');
+  if(!c||!c.r){box.innerHTML='<p class="hint" style="margin:0">Data tidak tersedia untuk titik ini.</p>';return;}
+  const r=c.r,o=GO();
+  const rows=[
+    ['Matahari terbenam',fmtTime(r.ts,0,false)+' UT'],
+    ['Umur bulan',r.age>0?f(r.age,1)+' jam':'belum ijtimak'],
+    ['Nilai standar',r.age>0?orgValues(o,r):'–'],
+    ['Lag',r.lag===null?'–':f(r.lag,0)+' menit'],
+    ['Peluang (tinggi dan elongasi)',r.age>0?f(c.p*100,0)+'%':'–']
+  ];
+  box.innerHTML='<h3>'+f(Math.abs(c.lat),0)+'° '+(c.lat<0?'LS':'LU')+', '+f(Math.abs(c.lon),0)+'° '+(c.lon<0?'BB':'BT')+' <small style="font-weight:400;color:var(--muted)">dekat '+esc(nearestCity(c.lat,c.lon))+'</small></h3>'+
+    '<p style="margin:0 0 10px"><span class="tag '+(c.st===4?'ok':c.st===3?'mid':'no')+'">'+ST_TXT[c.st]+'</span> <small>('+esc(o.short)+')</small></p>'+
+    '<dl class="kv">'+rows.map(x=>'<dt>'+x[0]+'</dt><dd>'+x[1]+'</dd>').join('')+'</dl>';
+}
+function bindApp(){
+  document.querySelectorAll('#navin button').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+  let v='hilal';
+  try{v=(location.hash||'').replace('#','')||'hilal';}catch(e){}
+  showView(v);
+}
+
+
+// ====================== Gerbang login dan peran ======================
+const AUTH={role:null,name:'',tm:null};
+function seedStars(id,n,ymax){
+  const g=$(id);if(!g) return;
+  const r=mulberry32(id.length*97+n);let s='';
+  for(let i=0;i<n;i++){
+    s+='<circle class="st" cx="'+(r()*1000).toFixed(0)+'" cy="'+(r()*ymax).toFixed(0)+'" r="'+(0.6+r()*1.5).toFixed(1)+'" style="animation-delay:'+(r()*3).toFixed(2)+'s;animation-duration:'+(2.2+r()*3).toFixed(1)+'s"/>';
+  }
+  g.innerHTML=s;
+}
+function setPick(){
+  $('g-msg').textContent='';
+  setTimeout(()=>{try{$('g-name').focus();}catch(e){}},0);
+}
+function submitGate(ev){
+  ev.preventDefault();
+  enterApp('user',$('g-name').value.trim().slice(0,40),true);
+}
+function enterApp(role,name,withSplash){
+  AUTH.role=role;AUTH.name=name;
+  try{sessionStorage.setItem('hilalai.sesi',JSON.stringify({role,name}));}catch(e){}
+  document.body.dataset.role=role;
+  const w=$('who');w.textContent='Pengguna'+(name?' · '+name:'');w.className='who user';
+  $('gate').hidden=true;
+  const go=()=>{if(withSplash) showSplash(role,name);else revealApp();};
+  if(!ORG_SAVED) openPicker(false,go);else go();
+}
+function showSplash(role,name){
+  const sp=$('splash');
+  $('sp-hello').textContent='Selamat datang'+(name?', '+name:'');
+  const dur=reduceMotion?1300:4300;
+  $('sp-bar').style.animationDuration=dur+'ms';
+  sp.classList.remove('out','run');sp.hidden=false;void sp.offsetWidth;sp.classList.add('run');
+  clearTimeout(AUTH.tm);AUTH.tm=setTimeout(finishSplash,dur);
+}
+function finishSplash(){
+  clearTimeout(AUTH.tm);
+  const sp=$('splash');if(sp.hidden) return;
+  sp.classList.add('out');
+  setTimeout(()=>{sp.hidden=true;revealApp();},reduceMotion?0:560);
+}
+function revealApp(){
+  document.body.classList.remove('locked');
+  $('app').hidden=false;
+  showView(VIEW);
+}
+function logout(){
+  try{sessionStorage.removeItem('hilalai.sesi');}catch(e){}
+  clearTimeout(AUTH.tm);
+  AUTH.role=null;AUTH.name='';document.body.dataset.role='';
+  document.body.classList.add('locked');
+  $('app').hidden=true;$('splash').hidden=true;$('gate').hidden=false;
+  $('g-name').value='';
+  VIEW='hilal';setPick();
+  try{window.scrollTo(0,0);}catch(e){}
+}
+function bootAuth(){
+  seedStars('gate-stars',80,440);seedStars('sp-stars',120,520);seedStars('app-stars',170,700);
+  bindPicker();$('orgbtn').textContent='Standar: '+ORG.short;
+  $('gate-form').addEventListener('submit',submitGate);
+  $('sp-go').addEventListener('click',finishSplash);
+  $('logout').addEventListener('click',logout);
+  let ses=null;
+  try{ses=JSON.parse(sessionStorage.getItem('hilalai.sesi')||'null');}catch(e){}
+  if(ses&&(ses.role==='user'||ses.role==='admin')) enterApp('user',String(ses.name||'').slice(0,40),false);
+  else setPick();
+}
+
+// ====================== Tanya HilalApp ======================
+// Mesin jawaban bisa diganti tanpa mengubah tampilan:
+//   mode 'local'  : jawaban disusun di perangkat dari hasil hitungan aplikasi. Tidak ada data keluar.
+//   mode 'remote' : pertanyaan dan konteks dikirim ke server perantara (lihat hilalapp-worker.js).
+// Kontrak server:  POST endpoint  { pertanyaan, konteks, riwayat:[{peran:'user'|'bot',teks}] }
+//                  balasan        { jawaban: "teks" }
+// Bila server gagal, aplikasi otomatis memakai jawaban lokal.
+// PENTING: bila mode 'remote' dipakai, ubah pernyataan privasi di aplikasi, karena pertanyaan terkirim ke server.
+// Isi endpoint dengan URL Cloudflare Worker Anda (lihat hilalapp-worker.js), mis. 'https://hilalapp-ai.NAMA.workers.dev'.
+// Endpoint kosong = jawaban lokal tanpa AI. Endpoint terisi = LLM dipakai, dan bila gagal otomatis kembali ke jawaban lokal.
+const ASK_ENDPOINT='';
+const ASK_CONFIG={mode:ASK_ENDPOINT?'remote':'local',endpoint:ASK_ENDPOINT,timeoutMs:25000,maxHistory:6};
+const ASK={inited:false,hist:[],busy:false,viaVoice:false};
+const ASK_SUGGEST=['Apakah hilal sudah memenuhi standar?','Kapan waktu terbaik mengamati?','Ke arah mana saya harus menghadap?','Apa itu elongasi?','Kenapa awal bulan bisa berbeda?','Bagaimana cara mengamati dengan aman?'];
+
+// ---- fakta dari hitungan aplikasi (hanya nilai sederhana, aman dikirim ke server) ----
+function askFacts(){
+  const r=STATE&&STATE.r,loc=STATE&&STATE.loc;
+  if(!r||!loc) return null;
+  const tz=loc.tz,z=tzName(tz),o=ORG,up=r.age>0;
+  const best=SCN.bestM;
+  return {
+    r:r,o:o,
+    tanggal:fmtDay(r.ts,tz),
+    lintang:+loc.lat.toFixed(4),bujur:+loc.lon.toFixed(4),ketinggian_m:loc.elev,zona:z,
+    standar:o.name,ambang:orgThreshold(o),
+    sudahIjtimak:up,memenuhi:orgTest(o,r),nilaiStandar:up?orgValues(o,r):null,
+    ijtimak:fmtDate(r.jc,tz)+', '+fmtTime(r.jc,tz,false)+' '+z,
+    terbenam:fmtTime(r.ts,tz,false)+' '+z,
+    tinggi:+r.alt.toFixed(2),tinggiMarie:+r.altR.toFixed(2),
+    elongasi:+r.elong.toFixed(2),elongasiGeosentrik:+r.elongG.toFixed(2),
+    umurJam:+r.age.toFixed(2),lagMenit:r.lag===null?null:+r.lag.toFixed(1),
+    azMatahari:+r.sunAz.toFixed(1),azBulan:+r.moonAz.toFixed(1),bedaAz:+r.daz.toFixed(2),
+    waktuTerbaik:best!==null?fmtTime(r.ts+best/1440,tz,false)+' '+z:null,
+    menitSetelahTerbenam:best!==null?Math.round(best):null,
+    arah:compass(r.sunAz),
+    nilaiV:+criteria(r).V.toFixed(2)
+  };
+}
+function askPayload(F){
+  if(!F) return null;
+  const o={};Object.keys(F).forEach(k=>{if(k!=='r'&&k!=='o') o[k]=F[k];});
+  return o;
+}
+
+// ---- pengenalan maksud pertanyaan (fungsi murni) ----
+const ASK_INTENTS=[
+  {id:'sapa',w:['halo','hai','hallo','assalamualaikum','terima kasih','makasih','thanks','selamat pagi','selamat siang','selamat sore','selamat malam']},
+  {id:'status',w:['memenuhi','terpenuhi','standar','kriteria','mabims','khgt','odeh','syarat','lolos','imkanur','belum memenuhi','kenapa belum','nilai v']},
+  {id:'beda',w:['beda','berbeda','perbedaan','kenapa lebaran','kenapa tanggal','organisasi','beda standar','sidang isbat','isbat','pemerintah','muhammadiyah','kenapa awal']},
+  {id:'waktu',w:['waktu terbaik','jam berapa','pukul','mulai mengamati','mulai amati','kapan mulai','kapan mengamati','kapan amati','kapan waktu','waktu mengamati','jam']},
+  {id:'arah',w:['arah','menghadap','azimuth','dimana','di mana','posisi hilal','letak','sebelah','ke mana']},
+  {id:'terlihat',w:['terlihat','teramati','kelihatan','bisa dilihat','peluang','kemungkinan','tampak','nampak','bisa kelihatan','kelihatan tidak']},
+  {id:'tinggi',w:['tinggi hilal','tinggi bulan','ketinggian hilal','derajat','tinggi']},
+  {id:'elongasi',w:['elongasi','jarak sudut','jarak bulan dari matahari']},
+  {id:'ijtimak',w:['ijtimak','ijtima','konjungsi','bulan baru','new moon']},
+  {id:'umur',w:['umur bulan','umur','lag','selisih terbenam','bulan terbenam','bulan tenggelam']},
+  {id:'hilalDef',w:['apa itu hilal','hilal itu','pengertian hilal','definisi hilal','hilal adalah','apa hilal','arti hilal']},
+  {id:'aman',w:['aman','mengamati dengan aman','cara aman','keselamatan','teropong','teleskop','binokular','bahaya','mata','merusak']},
+  {id:'siap',w:['persiapan','bawa apa','perlu dibawa','yang dibawa','bawa','alat','cara mengamati','cara melihat','tips','tempat pengamatan','lokasi pengamatan','ukur','kepalan','kelingking','cara rukyat']},
+  {id:'kalender',w:['kapan ramadan','kapan lebaran','kapan puasa','kapan idul','tanggal hijriah','kalender','hijriah','lebaran','puasa','ramadan','syawal']},
+  {id:'globe',w:['globe','peta dunia','seluruh dunia','garis senja']},
+  {id:'lapor',w:['lapor','laporan','rukyat','melaporkan']},
+  {id:'tentang',w:['hilalapp','fitur','bisa apa','menu','aplikasi ini','kamu siapa','siapa kamu']}
+];
+function askNorm(q){return ' '+String(q||'').toLowerCase().replace(/[^a-z0-9\u00c0-\u024f\s]/g,' ').replace(/\s+/g,' ').trim()+' ';}
+function askIntent(q){
+  const n=askNorm(q);let best=null,bs=0;
+  ASK_INTENTS.forEach(it=>{
+    let sc=0;
+    it.w.forEach(w=>{
+      if(n.includes(' '+w+' ')||(w.length>=6&&n.includes(w))) sc+=w.length;
+    });
+    if(sc>bs){bs=sc;best=it.id;}
+  });
+  return bs>=3?best:null;
+}
+
+// ---- penyusun jawaban ----
+const askP=t=>'<p>'+t+'</p>';
+const askNeedData='Lengkapi dulu lokasi dan tanggal di menu <b>Pengamatan</b>, supaya saya bisa menjawab dengan data sore itu.';
+const askNoHilal=F=>!F.sudahIjtimak?'Pada sore ini <b>ijtimak belum terjadi</b> (terjadi '+F.ijtimak+'), jadi belum ada hilal yang bisa diamati.':(F.lagMenit!==null&&F.lagMenit<=0)?'Bulan <b>terbenam lebih dulu</b> daripada matahari, sehingga hilal tidak mungkin terlihat sore ini.':'';
+const askTail=askP('<small>Hasil ini hitungan astronomi. Penetapan awal bulan tetap melalui rukyat dan sidang isbat.</small>');
+
+function askStatus(F){
+  if(!F) return askP(askNeedData);
+  const o=F.o,r=F.r;
+  let h=askP('Menurut standar <b>'+esc(o.short)+'</b> ('+esc(F.ambang)+'), hilal sore ini <b>'+(F.memenuhi?'sudah memenuhi':'belum memenuhi')+'</b> syarat.');
+  if(!F.sudahIjtimak) return h+askP(askNoHilal(F));
+  const L=[];
+  if(o.type==='odeh'){
+    L.push('Nilai V = <b>'+f(F.nilaiV,2)+'</b>, batasnya 2 (V ≥ 2 berarti dapat teramati dengan alat optik). V disusun dari tinggi bulan dan lebar sabit.');
+  }else{
+    const a=orgAlt(o,r),aLab=o.altMode==='marie'?"Tinggi mar'ie":'Tinggi hilal';
+    const gA=a-o.alt,gE=r.elongG-o.elong;
+    L.push(aLab+' <b>'+f(a,2)+'°</b> dari batas '+fnum(o.alt)+'° ('+(gA>=0?'sudah cukup':'kurang '+f(-gA,2)+'°')+').');
+    L.push('Elongasi <b>'+f(r.elongG,2)+'°</b> dari batas '+fnum(o.elong)+'° ('+(gE>=0?'sudah cukup':'kurang '+f(-gE,2)+'°')+').');
+    if(o.age) L.push('Umur bulan <b>'+f(r.age,1)+' jam</b> dari batas '+fnum(o.age)+' jam ('+(r.age>=o.age?'sudah cukup':'belum cukup')+').');
+  }
+  h+='<ul>'+L.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(F.lagMenit!==null&&F.lagMenit<=0) h+=askP('Catatan: bulan terbenam lebih dulu daripada matahari, jadi hilal tetap tidak mungkin dilihat langsung.');
+  return h+askTail;
+}
+function askBeda(F){
+  let h=askP('Awal bulan bisa berbeda karena tiap pihak memakai <b>batas dan wilayah penilaian</b> yang berbeda:');
+  h+='<ul>'+ORGS.map(o=>'<li><b>'+esc(o.short)+'</b>: '+esc(orgThreshold(o))+'. Wilayah: '+(o.scope==='global'?'seluruh dunia':'Indonesia')+'.</li>').join('')+'</ul>';
+  if(F&&F.sudahIjtimak){
+    h+=askP('Untuk sore yang sedang Anda lihat, hasilnya: '+ORGS.map(o=>'<b>'+esc(o.short)+'</b> '+(orgTest(o,F.r)?'memenuhi':'belum memenuhi')+' (di lokasi ini)').join(', ')+'.');
+  }
+  return h+askP('Selain itu, ada pihak yang menunggu hasil rukyat langsung sebelum menetapkan. Menu <b>Kalender Hijriah</b> membandingkan awal bulan menurut tiap standar.');
+}
+function askWaktu(F){
+  if(!F) return askP(askNeedData);
+  const x=askNoHilal(F);if(x) return askP(x);
+  let h=askP('Matahari terbenam pukul <b>'+F.terbenam+'</b>.');
+  if(F.waktuTerbaik) h+=askP('Waktu terbaik mencari hilal sekitar pukul <b>'+F.waktuTerbaik+'</b>, kira-kira '+F.menitSetelahTerbenam+' menit setelah matahari terbenam. Saat itu langit sudah cukup gelap tetapi bulan belum terlalu rendah.');
+  if(F.lagMenit!==null) h+=askP('Bulan terbenam sekitar <b>'+Math.round(F.lagMenit)+' menit</b> setelah matahari, jadi waktu mengamati singkat. Datanglah sekitar 20 menit sebelum matahari terbenam.');
+  return h;
+}
+function askArah(F){
+  if(!F) return askP(askNeedData);
+  const x=askNoHilal(F);if(x) return askP(x);
+  const r=F.r;
+  let h=askP('Hadapkan pandangan ke ufuk <b>'+F.arah+'</b> (azimuth '+f(r.sunAz,0)+'°), yaitu titik matahari terbenam.');
+  if(r.alt>0) h+=askP('Hilal berada sekitar <b>'+armSpan(r.alt)+'</b> di atas ufuk dan sekitar <b>'+armSpan(r.daz)+'</b> di sebelah '+(r.daz>=0?'utara':'selatan')+' titik itu.');
+  return h+askP('<small>Bantuan ukuran: lebar jari kelingking di ujung tangan terentang kira-kira 1°, kepalan tangan kira-kira 10°.</small>');
+}
+function askTinggi(F){
+  let h=askP('<b>Tinggi hilal</b> adalah sudut bulan di atas ufuk saat matahari terbenam. Makin tinggi, makin mudah dilihat karena lebih jauh dari kabut dan cahaya senja di dekat ufuk.');
+  if(F&&F.sudahIjtimak){
+    const t=F.tinggi;
+    h+=askP('Sore ini tingginya <b>'+f(t,2)+'°</b> ('+(t<0?'di bawah ufuk, tidak tampak':t<3?'sangat rendah':t<6?'rendah sampai sedang':'cukup tinggi')+').');
+  }
+  return h;
+}
+function askElongasi(F){
+  let h=askP('<b>Elongasi</b> adalah jarak sudut bulan dari matahari di langit. Makin besar, sabit makin tebal dan terang sehingga lebih mudah dibedakan dari cahaya senja.');
+  if(F&&F.sudahIjtimak) h+=askP('Sore ini elongasinya <b>'+f(F.elongasiGeosentrik,2)+'°</b>. Standar yang sedang Anda pilih ('+esc(F.o.short)+') mensyaratkan: '+esc(F.ambang)+'.');
+  return h;
+}
+function askIjtimak(F){
+  let h=askP('<b>Ijtimak</b> (konjungsi) adalah saat bulan dan matahari sejajar. Ini awal bulan baru secara astronomis, tetapi bulan belum tentu terlihat, karena sisi yang terang masih menghadap menjauh dari bumi.');
+  if(F) h+=askP('Ijtimak untuk sore ini terjadi pada <b>'+F.ijtimak+'</b>, '+(F.sudahIjtimak?'sebelum matahari terbenam, sehingga hilal bisa dihitung.':'<b>setelah</b> matahari terbenam, sehingga belum ada hilal.'));
+  return h;
+}
+function askUmur(F){
+  let h=askP('<b>Umur bulan</b> adalah waktu yang berlalu sejak ijtimak sampai matahari terbenam. <b>Lag</b> adalah selisih waktu terbenam bulan dan matahari: lag besar berarti bulan bertahan lebih lama di langit senja.');
+  if(F&&F.sudahIjtimak) h+=askP('Sore ini umur bulan <b>'+f(F.umurJam,1)+' jam</b>'+(F.lagMenit!==null?' dan lag <b>'+f(F.lagMenit,0)+' menit</b>.':'.'));
+  return h;
+}
+function askHilalDef(){
+  return askP('<b>Hilal</b> adalah bulan sabit tipis pertama yang terlihat setelah ijtimak, di langit barat sesaat setelah matahari terbenam. Kemunculannya menjadi penanda masuknya bulan Hijriah yang baru.');
+}
+function askTerlihat(F){
+  if(!F) return askP(askNeedData);
+  const x=askNoHilal(F);if(x) return askP(x);
+  let h;
+  if(F.memenuhi) h=askP('Secara hitungan, hilal sore ini <b>sudah memenuhi</b> standar '+esc(F.o.short)+', jadi <b>memungkinkan terlihat</b> bila langit barat cerah dan ufuk bersih. Tinggi '+f(F.tinggi,1)+'°, elongasi '+f(F.elongasi,1)+'°.');
+  else h=askP('Hilal sore ini <b>belum memenuhi</b> standar '+esc(F.o.short)+'. Dengan tinggi '+f(F.tinggi,1)+'° dan elongasi '+f(F.elongasi,1)+'°, hilal sangat tipis dan dekat ke matahari sehingga <b>sulit atau tidak mungkin</b> terlihat, bahkan saat langit cerah.');
+  return h+askP('Cuaca, awan di ufuk barat, dan pengalaman pengamat juga sangat berpengaruh. Menu <b>Pengamatan</b> memuat globe yang menunjukkan peluang di berbagai tempat.')+askTail;
+}
+function askAman(){
+  return askP('<b>Keselamatan mata nomor satu.</b>')+'<ul><li>Jangan pernah mengarahkan teropong atau teleskop ke langit barat sebelum matahari <b>benar-benar</b> terbenam.</li><li>Melihat matahari lewat alat optik dapat merusak mata secara permanen.</li><li>Mulailah mencari hilal dengan mata telanjang, lalu pakai alat optik hanya setelah matahari terbenam sempurna.</li></ul>';
+}
+function askSiap(){
+  return askP('Tips mengamati hilal:')+'<ul><li>Pilih tempat dengan pandangan terbuka ke arah barat, misalnya pantai, bukit, atau atap gedung.</li><li>Datang sekitar 20 menit sebelum matahari terbenam dan bawa kompas atau aplikasi penunjuk arah.</li><li>Ukur dengan tangan terentang: kelingking kira-kira 1°, kepalan tangan kira-kira 10°.</li><li>Teropong atau teleskop sangat membantu, tetapi pakai hanya setelah matahari terbenam.</li><li>Catat waktu dan kondisi langit, lalu laporkan ke pos rukyat setempat atau lewat menu <b>Lapor Rukyat</b>.</li></ul>';
+}
+function askKalender(){
+  return askP('Tanggal Hijriah ada di menu <b>Kalender Hijriah</b>. Di sana Anda bisa memilih tahun, melihat awal tiap bulan menurut standar pilihan Anda (sekarang: <b>'+esc(ORG.short)+'</b>), dan membandingkannya dengan standar lain.')+askTail;
+}
+function askGlobe(){
+  return askP('Globe di menu <b>Pengamatan</b> menunjukkan daerah mana di dunia yang sudah memenuhi standar terpilih saat matahari terbenam. Mode <b>Standar terpenuhi</b> memberi status per titik, sedangkan mode <b>Peluang</b> menaksir peluang dari tinggi bulan dan elongasi menurut standar itu. Geser untuk memutar, klik sebuah titik untuk rincian.');
+}
+function askLapor(){
+  return askP('Menu <b>Lapor Rukyat</b> mencatat hasil pengamatan Anda (terlihat, tidak terlihat, atau ragu-ragu) beserta alat, kondisi langit, dan data hisab otomatis. Laporan disimpan di perangkat ini dan bisa diunduh sebagai CSV.');
+}
+function askTentang(){
+  return askP('HilalApp menghitung posisi matahari dan bulan, menyusun kalender Hijriah, memetakan status hilal di globe dunia, dan mencatat laporan rukyat. Anda bisa bertanya soal istilah, hasil sore ini, atau cara mengamati.');
+}
+function askSapa(q){
+  return /terima kasih|makasih|thanks/.test(q.toLowerCase())?askP('Sama-sama. Silakan bertanya lagi kapan saja.'):askP('Halo. Saya bisa membantu menjelaskan hasil pengamatan sore ini dan istilah seputar hilal. Pilih salah satu pertanyaan di bawah atau tulis sendiri.');
+}
+function askFallback(){
+  return askP('Maaf, saya belum paham pertanyaan itu. Saya bisa membantu seputar <b>hilal, ijtimak, tinggi, elongasi, standar (MABIMS, KHGT, Odeh), waktu dan arah mengamati, serta keselamatan</b>. Coba salah satu pertanyaan di bawah.');
+}
+function askLocal(q,F){
+  switch(askIntent(q)){
+    case 'sapa':return askSapa(q);
+    case 'status':return askStatus(F);
+    case 'beda':return askBeda(F);
+    case 'waktu':return askWaktu(F);
+    case 'arah':return askArah(F);
+    case 'terlihat':return askTerlihat(F);
+    case 'tinggi':return askTinggi(F);
+    case 'elongasi':return askElongasi(F);
+    case 'ijtimak':return askIjtimak(F);
+    case 'umur':return askUmur(F);
+    case 'hilalDef':return askHilalDef();
+    case 'aman':return askAman();
+    case 'siap':return askSiap();
+    case 'kalender':return askKalender();
+    case 'globe':return askGlobe();
+    case 'lapor':return askLapor();
+    case 'tentang':return askTentang();
+    default:return askFallback();
+  }
+}
+
+// ---- lapisan penghubung: lokal atau server ----
+function askRemoteHTML(t){
+  return String(t||'').split(/\n{2,}/).map(par=>'<p>'+esc(par).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')+'</p>').join('');
+}
+async function askEngine(q,F){
+  if(ASK_CONFIG.mode==='remote'&&ASK_CONFIG.endpoint){
+    const ctl=typeof AbortController!=='undefined'?new AbortController():null;
+    const tm=setTimeout(()=>{if(ctl) ctl.abort();},ASK_CONFIG.timeoutMs);
+    try{
+      const res=await fetch(ASK_CONFIG.endpoint,{
+        method:'POST',headers:{'Content-Type':'application/json'},signal:ctl?ctl.signal:undefined,
+        body:JSON.stringify({pertanyaan:q,konteks:askPayload(F),riwayat:ASK.hist.slice(-ASK_CONFIG.maxHistory).map(m=>({peran:m.role,teks:m.text}))})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const d=await res.json();
+      if(!d||typeof d.jawaban!=='string'||!d.jawaban.trim()) throw new Error('balasan kosong');
+      return {html:askRemoteHTML(d.jawaban),text:d.jawaban};
+    }catch(e){
+      return {html:askLocal(q,F)+askP('<small>Server jawaban tidak dapat dihubungi, jadi ini jawaban bawaan aplikasi.</small>'),text:''};
+    }finally{clearTimeout(tm);}
+  }
+  return {html:askLocal(q,F),text:''};
+}
+
+// ---- tampilan ----
+function askModeText(){
+  return ASK_CONFIG.mode==='remote'&&ASK_CONFIG.endpoint
+    ?'Jawaban dibuat oleh AI (LLM) di server. Pertanyaan Anda dan data sore pengamatan dikirim ke server tersebut. Jawaban AI dapat keliru; penetapan awal bulan tetap melalui rukyat dan sidang isbat.'
+    :'Jawaban disusun dari hitungan aplikasi di perangkat Anda. Pertanyaan teks tidak dikirim ke mana pun.';
+}
+function askCtxText(){
+  const F=askFacts();
+  return F?'Data yang dipakai: '+F.tanggal+' · '+F.lintang.toString().replace('.',',')+', '+F.bujur.toString().replace('.',',')+' · standar '+ORG.short+'.':'Belum ada data pengamatan. Lengkapi lokasi dan tanggal di menu Pengamatan.';
+}
+function askAdd(role,html,text){
+  const box=$('chat'),d=document.createElement('div');
+  d.className='cb '+(role==='user'?'u':'b');
+  d.innerHTML=html;box.appendChild(d);box.scrollTop=box.scrollHeight;
+  return d;
+}
+async function askSend(q){
+  q=String(q||'').trim().slice(0,300);
+  if(!q||ASK.busy) return;
+  voiceStop();
+  ASK.busy=true;$('ask-go').disabled=true;
+  askAdd('user',esc(q));
+  ASK.hist.push({role:'user',text:q});
+  const wait=askAdd('bot','Menyusun jawaban…');wait.classList.add('typing');
+  const F=askFacts();
+  const [a]=await Promise.all([askEngine(q,F),new Promise(res=>setTimeout(res,350))]);
+  wait.classList.remove('typing');wait.innerHTML=a.html;
+  ASK.hist.push({role:'bot',text:a.text||wait.textContent});
+  $('chat').scrollTop=$('chat').scrollHeight;
+  $('ask-ctx').textContent=askCtxText();
+  ASK.busy=false;$('ask-go').disabled=false;
+  if(ASK.viaVoice||($('ask-speak')&&$('ask-speak').checked)) voiceSpeak(a.text||htmlToSpeech(a.html));
+  ASK.viaVoice=false;
+  if(!VOICE.rec) {try{$('ask-in').focus();}catch(e){}}
+}
+function initTanya(){
+  $('ask-ctx').textContent=askCtxText();
+  $('ask-mode').textContent=askModeText();
+  if(ASK.inited) return;
+  ASK.inited=true;
+  $('ask-chips').innerHTML=ASK_SUGGEST.map(t=>'<button type="button">'+esc(t)+'</button>').join('');
+  $('ask-chips').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>askSend(b.textContent)));
+  $('ask-form').addEventListener('submit',ev=>{ev.preventDefault();const v=$('ask-in').value;$('ask-in').value='';askSend(v);});
+  askAdd('bot',askP('Halo. Tanyakan seputar hilal atau hasil pengamatan sore yang sedang Anda lihat. Pilih salah satu pertanyaan di bawah, tulis sendiri, atau tekan tombol mikrofon untuk bertanya dengan suara.'));
+  voiceInit();
+}
+
+
+// ====================== Suara: bertanya dan menjawab ======================
+// Masukan : Web Speech API (SpeechRecognition), bahasa id-ID. Di Chrome dan Edge audio diproses layanan peramban.
+// Keluaran: speechSynthesis bawaan perangkat, suara bahasa Indonesia bila tersedia.
+const VOICE={rec:null,Rec:null,voice:null,speaking:false,inited:false};
+function vstat(t){const e=$('ask-vstat');if(e) e.textContent=t||'';}
+function htmlToSpeech(html){
+  const d=document.createElement('div');d.innerHTML=String(html||'');
+  d.querySelectorAll('small').forEach(x=>x.remove());
+  d.querySelectorAll('li').forEach(li=>{li.textContent=li.textContent.replace(/\s*[.;:]?\s*$/,'')+'. ';});
+  return (d.textContent||'').replace(/°/g,' derajat').replace(/≥/g,' minimal ').replace(/\s+/g,' ').trim();
+}
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const vs=speechSynthesis.getVoices();
+  VOICE.voice=vs.find(v=>/^id[-_]ID$/i.test(v.lang))||vs.find(v=>/^id/i.test(v.lang))||vs.find(v=>/^ms/i.test(v.lang))||null;
+}
+function voiceStop(){
+  try{if('speechSynthesis' in window) speechSynthesis.cancel();}catch(e){}
+  VOICE.speaking=false;const b=$('ask-stop');if(b) b.hidden=true;
+}
+function voiceSpeak(text){
+  if(!('speechSynthesis' in window)||!text) return;
+  voiceStop();
+  if(VOICE.rec) try{VOICE.rec.abort();}catch(e){}
+  if(!VOICE.voice) pickVoice();
+  // Pecah per kalimat: Chrome memotong ucapan panjang.
+  const parts=text.match(/[^.!?]+[.!?]*/g)||[text];
+  const chunks=[];let cur='';
+  parts.forEach(p=>{if((cur+p).length>180&&cur){chunks.push(cur);cur=p;}else cur+=p;});
+  if(cur.trim()) chunks.push(cur);
+  VOICE.speaking=true;$('ask-stop').hidden=false;
+  chunks.forEach((c,i)=>{
+    const u=new SpeechSynthesisUtterance(c.trim());
+    u.lang=VOICE.voice?VOICE.voice.lang:'id-ID';if(VOICE.voice) u.voice=VOICE.voice;
+    u.rate=0.98;
+    if(i===chunks.length-1){u.onend=u.onerror=()=>{VOICE.speaking=false;$('ask-stop').hidden=true;};}
+    speechSynthesis.speak(u);
+  });
+  if(!VOICE.voice) vstat('Suara bahasa Indonesia belum terpasang di perangkat ini; memakai suara bawaan.');
+}
+function micState(on){
+  const b=$('ask-mic');if(!b) return;
+  b.classList.toggle('rec',on);b.setAttribute('aria-pressed',String(on));
+  b.setAttribute('aria-label',on?'Berhenti mendengarkan':'Bertanya dengan suara');
+}
+function voiceListen(){
+  if(!VOICE.Rec){vstat('Peramban ini belum mendukung input suara. Pakai Chrome atau Edge, atau ketik pertanyaan.');return;}
+  if(VOICE.rec){try{VOICE.rec.stop();}catch(e){}return;}
+  voiceStop();
+  const r=new VOICE.Rec();
+  r.lang='id-ID';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+  let finalT='',got=false;
+  r.onstart=()=>{micState(true);vstat('Mendengarkan… silakan bicara.');};
+  r.onresult=ev=>{
+    let interim='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t=ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) finalT+=t;else interim+=t;
+    }
+    $('ask-in').value=(finalT+interim).trim();got=true;
+  };
+  r.onerror=ev=>{
+    const m={'not-allowed':'Izin mikrofon ditolak. Izinkan mikrofon di pengaturan situs.','service-not-allowed':'Layanan suara tidak diizinkan di halaman ini. Buka lewat https atau localhost.','no-speech':'Suara tidak terdengar. Coba lagi.','audio-capture':'Mikrofon tidak ditemukan.','network':'Pengenalan suara butuh internet.'};
+    vstat(m[ev.error]||('Input suara gagal ('+ev.error+').'));got=false;
+  };
+  r.onend=()=>{
+    VOICE.rec=null;micState(false);
+    const q=$('ask-in').value.trim();
+    if(got&&q){vstat('');$('ask-in').value='';ASK.viaVoice=true;askSend(q);}
+  };
+  VOICE.rec=r;
+  try{r.start();}catch(e){VOICE.rec=null;micState(false);vstat('Tidak dapat memulai mikrofon.');}
+}
+function voiceInit(){
+  if(VOICE.inited) return;VOICE.inited=true;
+  VOICE.Rec=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+  if('speechSynthesis' in window){pickVoice();speechSynthesis.addEventListener&&speechSynthesis.addEventListener('voiceschanged',pickVoice);}
+  else $('ask-voicebar').hidden=true;
+  if(!VOICE.Rec) $('ask-mic').title='Input suara tidak didukung peramban ini';
+  $('ask-mic').addEventListener('click',voiceListen);
+  $('ask-stop').addEventListener('click',voiceStop);
+  window.addEventListener('pagehide',voiceStop);
+}
+
+// ---- Mulai ----
+(function init(){
+  loadOrg();
+  applyPreset(0);
+  const loc=getLoc();
+  const now=Date.now()/864e5+2440587.5;
+  let k=Math.floor((now-K0JD)/SYN)-1,e=null;
+  for(let g=0;g<4&&!e;g++,k++){
+    if(conjunction(k)>=now-1.2){e=eveningForConj(k,loc);}
+  }
+  if(e) $('date').value=dateInputValue(e.noon,loc.tz);
+  update();
+  SCN.last=performance.now();requestAnimationFrame(loop);
+  bindApp();
+  bootAuth();
+})();
+</script>
+</body>
+</html>
