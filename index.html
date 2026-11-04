@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HilalApp · Hisab hilal dan kalender Hijriah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="locked">
+<div class="appbg" aria-hidden="true">
+  <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="abgsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#03051A"/><stop offset=".55" stop-color="#0A1030"/><stop offset="1" stop-color="#171C52"/></linearGradient>
+      <radialGradient id="abghalo"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".22"/><stop offset=".6" stop-color="#FFB86B" stop-opacity=".06"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+      <linearGradient id="abgcres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      <linearGradient id="abgrim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2A35E" stop-opacity="0"/><stop offset=".5" stop-color="#FFD9A0" stop-opacity=".55"/><stop offset="1" stop-color="#F2A35E" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="1000" height="700" fill="url(#abgsky)"/>
+    <g id="app-stars"></g>
+    <circle class="halo" cx="835" cy="95" r="190" fill="url(#abghalo)"/>
+    <g transform="translate(790,52) scale(3.2)" opacity=".55"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#abgcres)"/></g>
+    <circle cx="500" cy="1260" r="700" fill="#040821"/>
+    <circle cx="500" cy="1260" r="700" fill="none" stroke="url(#abgrim)" stroke-width="2.5"/>
+  </svg>
+</div>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate-sky" aria-hidden="true">
+    <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="gsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050818"/><stop offset=".45" stop-color="#171B4D"/><stop offset=".72" stop-color="#4A2F70"/><stop offset=".9" stop-color="#C9645E"/><stop offset="1" stop-color="#F2A35E"/></linearGradient>
+        <radialGradient id="gglow"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".9"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+        <radialGradient id="ghalo"><stop offset="0" stop-color="#F6EFD9" stop-opacity=".38"/><stop offset="1" stop-color="#F6EFD9" stop-opacity="0"/></radialGradient>
+        <linearGradient id="gcres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      </defs>
+      <rect width="1000" height="700" fill="url(#gsky)"/>
+      <g id="gate-stars"></g>
+      <circle class="halo" cx="770" cy="200" r="190" fill="url(#ghalo)"/>
+      <g transform="translate(690,100) scale(4.6)"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#gcres)"/></g>
+      <ellipse cx="500" cy="610" rx="560" ry="120" fill="url(#gglow)" opacity=".6"/>
+      <rect y="610" width="1000" height="90" fill="#070B1C"/>
+      <line x1="0" y1="610" x2="1000" y2="610" stroke="#F2A35E" stroke-opacity=".6"/>
+    </svg>
+  </div>
+  <div class="gate-card">
+    <div class="g-brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="22" fill="#0E1535"/><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#gcres)"/></svg>
+      <div><h1 id="gate-title">HilalApp</h1><p>Hisab hilal, kalender Hijriah, dan laporan rukyat.</p></div>
+    </div>
+    <form id="gate-form" autocomplete="off" novalidate>
+      <label class="g-fld">Nama Anda (opsional)<input id="g-name" type="text" maxlength="40" autocomplete="name" placeholder="Contoh: Ahmad"></label>
+      <p class="g-hint">Anda dapat melihat pengamatan hilal, kalender Hijriah, globe dunia, dan mengisi laporan rukyat, serta bertanya seputar hilal.</p>
+      <button type="submit" id="g-go" class="g-go">Masuk</button>
+    </form>
+    <p class="g-by">Dipersembahkan oleh <b>Hilaltech</b></p>
+  </div>
+</div>
+
+<div class="splash" id="splash" hidden aria-live="polite">
+  <svg class="bg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="ssky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02040F"/><stop offset=".6" stop-color="#0B1236"/><stop offset="1" stop-color="#26285C"/></linearGradient>
+      <radialGradient id="satm"><stop offset=".72" stop-color="#6EA0FF" stop-opacity="0"/><stop offset=".78" stop-color="#8FB4FF" stop-opacity=".5"/><stop offset="1" stop-color="#6EA0FF" stop-opacity="0"/></radialGradient>
+      <radialGradient id="shalo"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".34"/><stop offset=".5" stop-color="#FFB86B" stop-opacity=".1"/><stop offset="1" stop-color="#FFB86B" stop-opacity="0"/></radialGradient>
+      <linearGradient id="scres" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+      <linearGradient id="srim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2A35E" stop-opacity="0"/><stop offset=".5" stop-color="#FFD9A0"/><stop offset="1" stop-color="#F2A35E" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="1000" height="700" fill="url(#ssky)"/>
+    <g id="sp-stars"></g>
+    <ellipse class="orbit" cx="500" cy="300" rx="330" ry="86" fill="none" stroke="#F6EFD9" stroke-opacity=".16" stroke-dasharray="3 9"/>
+    <g class="moonrise">
+      <circle class="halo" cx="500" cy="270" r="190" fill="url(#shalo)"/>
+      <g transform="translate(430,200) scale(3.2)"><path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" transform="translate(-6,0)" fill="url(#scres)"/></g>
+    </g>
+    <circle cx="500" cy="1210" r="700" fill="#040821"/>
+    <circle cx="500" cy="1210" r="700" fill="url(#satm)"/>
+    <circle cx="500" cy="1210" r="700" fill="none" stroke="url(#srim)" stroke-width="3" opacity=".95"/>
+  </svg>
+  <div class="sp-inner">
+    <p class="sp-hello" id="sp-hello">Selamat datang</p>
+    <h2 class="sp-title">HilalApp</h2>
+    <p class="sp-sub">Hisab hilal, kalender Hijriah, dan laporan rukyat</p>
+    <div class="sp-by"><span>Dipersembahkan oleh</span><b>Hilaltech</b></div>
+    <div class="sp-bar" aria-hidden="true"><i id="sp-bar"></i></div>
+    <button id="sp-go" type="button" class="g-go sp-btn">Mulai</button>
+  </div>
+</div>
+
+<div class="orgpick" id="orgpick" role="dialog" aria-modal="true" aria-labelledby="op-title" hidden>
+  <div class="op-card2">
+    <h2 id="op-title">Pilih standar falakiyah Anda</h2>
+    <p class="op-sub">Standar ini dipakai untuk menilai hilal, menyusun kalender Hijriah, dan menandai wilayah pada globe. Anda dapat menggantinya kapan saja lewat tombol "Standar" di bagian atas.</p>
+    <div id="op-list"></div>
+    <div class="op-custom" id="op-custom" hidden>
+      <label class="g-fld">Tinggi hilal minimal (°)<input id="op-alt" type="number" step="0.1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Elongasi minimal (°)<input id="op-elong" type="number" step="0.1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Umur bulan minimal (jam)<input id="op-age" type="number" step="1" min="0" inputmode="decimal"></label>
+      <label class="g-fld">Wilayah penilaian<select id="op-scope"><option value="indo">Indonesia</option><option value="global">Seluruh dunia</option></select></label>
+    </div>
+    <p class="op-desc" id="op-desc"></p>
+    <div class="op-actions"><button id="op-cancel" type="button" class="ghost" hidden>Batal</button><button id="op-ok" type="button" class="g-go">Gunakan standar ini</button></div>
+    <p class="op-foot">Rumusan mengacu pada informasi publik terbaru. Keputusan resmi organisasi dan Pemerintah tetap yang berlaku.</p>
+  </div>
+</div>
+
+<div id="app" hidden>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6EFD9"/><stop offset="1" stop-color="#FFB86B"/></linearGradient></defs>
+        <circle cx="23" cy="23" r="22" fill="#0E1535"/>
+        <path d="M30 7a17 17 0 1 0 0 32A13.5 13.5 0 0 1 30 7z" fill="url(#lg)"/>
+      </svg>
+      <div>
+        <h1>HilalApp</h1>
+        <p>Hisab hilal, kalender Hijriah, dan laporan rukyat.<span class="by-mini">Dipersembahkan oleh <b>Hilaltech</b></span></p>
+      </div>
+    </div>
+    <div class="hdr-r"><button id="orgbtn" type="button" class="ghost">Standar: MABIMS</button><div class="who" id="who"></div><button id="logout" type="button" class="ghost">Keluar</button></div>
+  </div>
+</header>
+<nav class="nav" aria-label="Menu utama">
+  <div class="navin" id="navin">
+    <button type="button" data-view="hilal" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>Pengamatan</button>
+    <button type="button" data-view="kalender" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender Hijriah</button>
+    <button type="button" data-view="lapor" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18 10l-4-4L4 16v4zM13 7l4 4"/></svg>Lapor Rukyat</button>
+    <button type="button" data-view="tanya" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 10a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.8-1.1 1.6M12 16.5h.01"/></svg>Tanya HilalApp</button>
+    <button type="button" data-view="tentang" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Tentang</button>
+  </div>
+</nav>
+
+<main class="wrap" id="main">
+
+  <div class="view" id="v-hilal">
+
+  <section class="bar" id="bar" aria-label="Pengaturan pengamatan">
+    <label>Lokasi pengamat
+      <select id="preset"></select>
+    </label>
+    <label class="coord">Lintang (°, selatan negatif)
+      <input id="lat" type="number" step="0.0001" inputmode="decimal">
+    </label>
+    <label class="coord">Bujur (°, timur positif)
+      <input id="lon" type="number" step="0.0001" inputmode="decimal">
+    </label>
+    <label class="coord">Ketinggian (m dpl)
+      <input id="elev" type="number" step="1" min="0" inputmode="decimal">
+    </label>
+    <label class="coord">Zona waktu (UTC+)
+      <input id="tz" type="number" step="0.5" inputmode="decimal">
+    </label>
+    <label>Tanggal pengamatan (sore hari)
+      <input id="date" type="date">
+    </label>
+    <div class="btnrow">
+      <button id="prev" type="button">Ijtimak sebelumnya</button>
+      <button id="next" type="button">Ijtimak berikutnya</button>
+      <button id="geo" type="button">Pakai lokasi perangkat</button>
+    </div>
+  </section>
+  <p class="hint" id="geomsg">Ketinggian memengaruhi waktu terbenam matahari (dip ufuk). Pilih tanggal sore hari saat hilal akan diamati.</p>
+  <div class="note" id="note" role="status"></div>
+
+  <section class="stage" aria-label="Animasi langit barat saat matahari terbenam">
+    <div class="readout">
+      <div class="pct" id="elongv">–</div>
+      <div class="plabel">elongasi bulan (jarak sudut bulan dari matahari)</div>
+    </div>
+    <div class="clock"><b id="clk">--:--</b><span id="clkrel"></span></div>
+    <svg id="sky" viewBox="0 0 720 400" role="img" aria-label="Animasi posisi matahari dan hilal di langit barat saat matahari terbenam"></svg>
+  </section>
+  <div class="tl">
+    <div class="tlgrid">
+      <button id="play" class="primary" type="button">Jeda</button>
+      <div class="scrubwrap">
+        <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Waktu pada animasi">
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <select id="speed" aria-label="Kecepatan animasi"><option value="1">Normal</option><option value="0.5">Lambat</option><option value="2">Cepat</option></select>
+    </div>
+    <div class="tlfoot"><button id="jump" type="button">Lompat ke waktu terbaik</button><span class="phase" id="phase" role="status"></span></div>
+  </div>
+  <p class="skyfoot">Pandangan menghadap barat: kiri = selatan, kanan = utara. Ukuran piringan dan ketebalan sabit digambar berlebihan agar terlihat; posisi dan gerakannya mengikuti hitungan astronomi. Lingkaran hijau putus-putus menandai waktu terbaik mencari hilal.</p>
+
+  <section class="block" aria-labelledby="h-sum">
+    <h2 id="h-sum">Ringkasan sore pengamatan</h2>
+    <p class="sub" id="sumdate"></p>
+    <div class="facts" id="sumstats"></div>
+    <ul class="plain" id="sumlist"></ul>
+  </section>
+
+    <section class="block" aria-labelledby="h-glb">
+      <h2 id="h-glb">Globe peluang hilal dunia</h2>
+      <p class="sub">Pilih standar falakiyah, lalu lihat daerah mana saja di dunia yang sudah memenuhinya saat matahari terbenam. Geser globe untuk memutarnya, klik atau ketuk sebuah titik untuk rincian.</p>
+      <div class="gtop">
+        <label class="fld">Standar falakiyah<select id="g-org"></select></label>
+        <div class="fld"><span>Tampilan peta</span>
+          <div class="seg" role="group" aria-label="Mode peta"><button id="g-mst" type="button" aria-pressed="true">Standar terpenuhi</button><button id="g-mpl" type="button" aria-pressed="false">Peluang</button></div>
+        </div>
+        <label class="fld">Fokus ke<select id="g-focus"></select></label>
+      </div>
+      <div class="globewrap">
+        <div class="gstage"><canvas id="gcv" role="img" aria-label="Globe dunia dengan garis pantai, garis senja, dan peta standar atau peluang hilal"></canvas><div class="gbadge" id="gbadge"></div><div class="gprog" id="gprog"></div></div>
+        <div class="gctl">
+          <div class="panel">
+            <label class="fld">Tanggal (UT)<input id="g-date" type="date"></label>
+            <div class="btnrow">
+              <button id="g-prev" type="button">Ijtimak sebelumnya</button>
+              <button id="g-m1" type="button" aria-label="Mundur satu hari">−1 hari</button>
+              <button id="g-p1" type="button" aria-label="Maju satu hari">+1 hari</button>
+              <button id="g-next" type="button">Ijtimak berikutnya</button>
+            </div>
+            <label class="fld">Waktu<input id="g-time" type="range" min="0" max="1000" step="1" value="1000"><span id="g-timel" style="color:var(--ink)"></span></label>
+            <div class="btnrow">
+              <button id="g-play" type="button" class="primary">Jalankan waktu</button>
+              <button id="g-rot" type="button" class="tog" aria-pressed="true">Putar globe</button>
+            </div>
+            <label class="chk"><input type="checkbox" id="g-layer" checked>Tampilkan lapisan peta</label>
+            <p class="hint" id="gmeta"></p>
+          </div>
+          <div class="panel"><h3>Legenda</h3><div class="lg" id="g-legend"></div></div>
+          <div class="panel" id="ginfo"><p class="hint" style="margin:0">Klik atau ketuk sebuah titik pada globe untuk melihat rincian.</p></div>
+        </div>
+      </div>
+      <p class="gsum" id="g-sum"></p>
+    </section>
+    <section class="block" aria-labelledby="h-reg">
+      <h2 id="h-reg">Daerah yang memenuhi standar</h2>
+      <p class="sub">Persentase titik di tiap wilayah yang sudah memenuhi standar terpilih pada sore hari ini.</p>
+      <div class="reggrid" id="g-regions"></div>
+    </section>
+    <section class="block" aria-labelledby="h-cty">
+      <h2 id="h-cty">Status per kota</h2>
+      <p class="sub">Dihitung tepat pada koordinat tiap kota saat matahari terbenam setempat.</p>
+      <div id="g-cities"></div>
+    </section>
+  
+
+  </div>
+
+  <div class="view" id="v-kalender" hidden>
+    <section class="block first" aria-labelledby="h-kal">
+      <h2 id="h-kal">Kalender Hijriah</h2>
+      <p class="sub">Tanggal Hijriah dihitung dengan standar falakiyah pilihan Anda, lalu disajikan sebagai kalender yang mudah dibaca. Penetapan resmi tetap melalui keputusan organisasi dan Pemerintah.</p>
+      <div class="khero" id="k-hero"><div class="kh-now"><span class="kh-lab">Hari ini</span><b class="kh-h">Menghitung…</b></div></div>
+      <div class="kset">
+        <button id="k-org" type="button" class="ghost">Standar: MABIMS</button>
+        <label class="fld">Tahun Hijriah<select id="k-year"></select></label>
+        <label class="fld">Wilayah acuan<select id="k-ref"></select></label>
+        <button id="k-today" type="button">Ke bulan ini</button>
+      </div>
+      <p class="hint" id="k-hint"></p>
+    </section>
+
+    <section class="block" aria-labelledby="k-mtitle">
+      <div class="kmn">
+        <button id="k-prev" type="button" aria-label="Bulan sebelumnya">‹</button>
+        <div class="kmt"><h2 id="k-mtitle">…</h2><p id="k-msub"></p></div>
+        <button id="k-next" type="button" aria-label="Bulan berikutnya">›</button>
+      </div>
+      <div id="k-grid"></div>
+      <p class="hint" style="margin-top:12px">Angka besar adalah tanggal Hijriah, angka kecil tanggal Masehi. Lingkaran menandai hari ini, dan warna menandai hari besar.</p>
+      <p class="kmnote" id="k-mnote"></p>
+      <ul class="plain kmev" id="k-mevents"></ul>
+    </section>
+
+    <section class="block" aria-labelledby="h-cmp">
+      <h2 id="h-cmp">Perbandingan antar standar</h2>
+      <p class="sub" id="k-cmpsub"></p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Standar</th><th>Awal bulan</th><th>Selisih</th></tr></thead>
+          <tbody id="k-cmp"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="h-ev">
+      <h2 id="h-ev">Hari besar Islam</h2>
+      <p class="sub" id="k-evsub"></p>
+      <div class="evgrid" id="k-events"></div>
+    </section>
+
+    <section class="block" aria-labelledby="h-kd">
+      <details>
+        <summary id="h-kd">Rincian hisab tiap bulan</summary>
+        <p class="sub" style="margin-top:10px">Setiap bulan ditentukan pada sore hari ke-29: bila standar terpenuhi, bulan baru dimulai keesokan harinya, dan bila belum, bulan berjalan digenapkan 30 hari (istikmal).</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Bulan</th><th>Awal bulan</th><th class="num">Lama</th><th>Nilai sore ke-29 bulan sebelumnya</th><th id="k-thorg">Penetapan</th></tr></thead>
+            <tbody id="k-body"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <div class="view" id="v-lapor" hidden>
+    <section class="block first" aria-labelledby="h-lap">
+      <h2 id="h-lap">Formulir laporan rukyat</h2>
+      <p class="sub">Catat hasil pengamatan hilal Anda. Data hisab dihitung otomatis. Laporan disimpan hanya di perangkat ini.</p>
+      <div class="rgrid">
+        <div class="panel form">
+          <h3>Pengamat</h3>
+          <div class="row2">
+            <label class="fld">Nama pengamat<input id="r-nama" type="text" autocomplete="name"></label>
+            <label class="fld">Instansi atau pos rukyat (opsional)<input id="r-inst" type="text"></label>
+          </div>
+          <h3>Lokasi dan waktu</h3>
+          <label class="fld">Nama tempat pengamatan<input id="r-tempat" type="text" placeholder="Contoh: Pantai Pelabuhan Ratu"></label>
+          <label class="fld">Lokasi cepat<select id="r-preset"></select></label>
+          <div class="row2">
+            <label class="fld">Lintang (°, selatan negatif)<input id="r-lat" type="number" step="0.0001" inputmode="decimal"></label>
+            <label class="fld">Bujur (°, timur positif)<input id="r-lon" type="number" step="0.0001" inputmode="decimal"></label>
+            <label class="fld">Ketinggian (m dpl)<input id="r-elev" type="number" step="1" min="0" inputmode="decimal"></label>
+            <label class="fld">Zona waktu (UTC+)<input id="r-tz" type="number" step="0.5" inputmode="decimal"></label>
+          </div>
+          <label class="fld">Tanggal pengamatan (sore hari)<input id="r-date" type="date"></label>
+          <div class="btnrow" style="margin:0">
+            <button id="r-home" type="button">Samakan dengan tab Pengamatan</button>
+            <button id="r-geo" type="button">Pakai lokasi perangkat</button>
+          </div>
+          <h3>Kondisi dan alat</h3>
+          <div class="row2">
+            <label class="fld">Alat yang dipakai
+              <select id="r-alat"><option value="mata">Mata telanjang</option><option value="teropong" selected>Teropong binokuler</option><option value="teleskop">Teleskop</option><option value="teleskop_ccd">Teleskop dengan kamera atau CCD</option></select>
+            </label>
+            <label class="fld">Kondisi langit barat
+              <select id="r-langit"><option value="cerah">Cerah</option><option value="berawan_tipis">Berawan tipis</option><option value="berawan_sebagian">Berawan sebagian</option><option value="mendung">Mendung</option><option value="hujan">Hujan</option><option value="kabut">Kabut atau asap</option></select>
+            </label>
+          </div>
+          <label class="fld">Tutupan awan di ufuk barat
+            <div class="range"><input id="r-awan" type="range" min="0" max="100" step="5" value="0"><output id="r-awanv">0%</output></div>
+          </label>
+          <h3>Hasil pengamatan</h3>
+          <div class="radios" role="radiogroup" aria-label="Hasil pengamatan">
+            <label><input type="radio" name="r-hasil" value="ya">Hilal terlihat</label>
+            <label><input type="radio" name="r-hasil" value="tidak">Tidak terlihat</label>
+            <label><input type="radio" name="r-hasil" value="ragu">Ragu-ragu</label>
+          </div>
+          <div class="row2">
+            <label class="fld">Waktu pertama terlihat (jam setempat)<input id="r-tlihat" type="time"></label>
+            <label class="fld">Jumlah pengamat atau saksi<input id="r-saksi" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+          </div>
+          <label class="fld">Catatan (bentuk sabit, posisi, kendala)<textarea id="r-cat" rows="3"></textarea></label>
+          <div class="btnrow" style="margin:0">
+            <button id="r-save" type="button" class="primary">Simpan laporan</button>
+            <button id="r-reset" type="button">Kosongkan hasil</button>
+          </div>
+          <div class="msg" id="r-msg" role="status"></div>
+        </div>
+        <div class="panel">
+          <h3>Data hisab otomatis</h3>
+          <div id="r-hisab"></div>
+          <p class="hint" style="margin-top:14px">Nilai ini ikut tersimpan bersama laporan.</p>
+        </div>
+      </div>
+    </section>
+    <section class="block" aria-labelledby="h-rl">
+      <h2 id="h-rl">Laporan tersimpan</h2>
+      <p class="sub" id="r-count"></p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Tempat dan pengamat</th><th>Hasil</th><th>Alat</th><th class="num">Tinggi / elongasi</th><th></th></tr></thead>
+          <tbody id="r-list"></tbody>
+        </table>
+      </div>
+      <p class="hint" id="r-empty">Belum ada laporan.</p>
+      <div class="btnrow" style="margin-top:14px">
+        <button id="r-dl" type="button" hidden>Unduh CSV</button>
+        <button id="r-clear" type="button">Hapus semua</button>
+      </div>
+      <details>
+        <summary>Teks CSV (untuk disalin)</summary>
+        <textarea id="r-csv" readonly rows="6" aria-label="Teks CSV laporan"></textarea>
+      </details>
+    </section>
+  </div>
+
+  <div class="view" id="v-tanya" hidden>
+    <section class="block first" aria-labelledby="h-ask">
+      <h2 id="h-ask">Tanya HilalApp</h2>
+      <p class="sub">Tanyakan apa saja. Untuk pertanyaan seputar hilal, standar falakiyah, kalender Hijriah, dan cara memakai aplikasi, jawaban memakai angka langsung dari hitungan HilalApp.</p>
+      <div class="askwrap">
+        <p class="askctx" id="ask-ctx"></p>
+        <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Percakapan"></div>
+        <div class="askchips" id="ask-chips"></div>
+        <form class="askform" id="ask-form" autocomplete="off">
+          <input id="ask-in" type="text" maxlength="1000" placeholder="Contoh: Kenapa hilal belum memenuhi standar?" aria-label="Pertanyaan Anda">
+          <button type="submit" class="primary" id="ask-go">Kirim</button>
+        </form>
+        <p class="hint" id="ask-mode"></p>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="v-tentang" hidden>
+    <section class="block first" aria-labelledby="h-abt">
+      <h2 id="h-abt">Tentang HilalApp</h2>
+      <p class="sub">HilalApp menghitung posisi matahari dan bulan, menyusun kalender Hijriah, mencatat laporan rukyat, dan memetakan status serta peluang hilal di globe dunia.</p>
+      <ul class="plain">
+        <li><b>Hisab.</b> Posisi matahari dan bulan memakai deret Meeus yang disingkat. Galat posisi bulan sekitar 0,01°–0,03°. Refraksi atmosfer dan cuaca setempat tidak dihitung.</li>
+        <li><b>Kriteria.</b> MABIMS baru (tinggi ≥ 3°, elongasi ≥ 6,4°), Muhammadiyah KHGT (tinggi ≥ 5°, elongasi ≥ 8°), Odeh (2004), dan kriteria kustom.</li>
+        <li><b>Tanya HilalApp.</b> Asisten AI yang menjawab pertanyaan apa pun; khusus soal hilal, kalender, dan aplikasi, jawabannya memakai hasil hitungan HilalApp yang sedang Anda lihat. Jawabannya tidak menetapkan awal bulan.</li>
+        <li><b>Privasi.</b> Seluruh perhitungan dan laporan berada di perangkat Anda. Tidak ada data yang dikirim ke server.</li>
+      </ul>
+      <div class="safety"><b>Keselamatan mata.</b> Jangan mengarahkan teropong atau teleskop ke langit barat sebelum matahari benar-benar terbenam.</div>
+    </section>
+  </div>
+
+  <footer>
+    <p>HilalApp adalah alat bantu hisab dan edukasi. Ephemeris memakai deret Meeus yang disingkat (galat posisi bulan sekitar 0,01°–0,03°), tanpa koreksi refraksi atmosfer dan cuaca setempat.</p>
+    <p>Peluang pada peta globe adalah taksiran dari tinggi bulan dan elongasi menurut standar terpilih, bukan penetapan awal bulan. Penetapan resmi tetap mengikuti rukyat dan sidang isbat.</p>
+    <p class="credit">Dipersembahkan oleh <b>Hilaltech</b></p>
+  </footer>
+</main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
